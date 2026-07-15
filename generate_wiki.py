@@ -657,7 +657,7 @@ def generate_html(characters, lore, talents, challenge_descs):
             classes_data = ",".join(sorted(all_classes)).lower()
 
             if portrait:
-                img_html = f'<img src="icons/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
+                img_html = f'<img src="Icons/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
                 fb_style = 'display:none'
             else:
                 img_html = ''
