@@ -1,83 +1,133 @@
 #!/usr/bin/env python3
 """
 Generate index.html for CCE Wiki from Lua data files.
+Flat grid layout grouped by cosmic sphere, matching the in-game browse-all screen.
 """
 import re
 import html
 import os
+from collections import defaultdict
 
 LUA_DIR = r"C:\wow_addon\ClassicClassesEnhanced"
 OUT_FILE = r"C:\cce-wiki\index.html"
 
-# ── Portrait filename mapping ──
-PORTRAIT_MAP = {
-    "Mountain King": "Mountain_king.jpg",
-    "Sister of Steel": "Sistersteel.jpg",
-    "Brewmaster": "brewmaster.jpg",
-    "Runemaster": "Runemaster.jpg",
-    "Berserker": "berserker.jpg",
-    "Blademaster": "blademaster.jpg",
-    "Brave": "brave.jpg",
-    "Tinker": "tinker.jpg",
-    "Prospector": "pros.jpg",
-    "Buccaneer": "Buccaneer.jpg",
-    "Warden": "warden.jpg",
-    "Demon Hunter": "DH.jpg",
-    "Dark Ranger": "dark_ranger.jpg",
-    "Pyremaster": "Pyremaster.jpg",
-    "Death Knight": "Death_Knight.jpg",
-    "Necromancer": "Necromancer.jpg",
-    "Graven One": "graven.jpg",
-    "Druid of the Claw": "Claw.jpg",
-    "Dragonsworn": "dragonsworn.jpg",
-    "Ley Walker": "ley.jpg",
-    "Plagueshifter": "Plagueshifter.jpg",
-    "Savagekin": "savage.jpg",
-    "Beastmaster": "Orcbeastmaster.jpg",
-    "Mountaineer": "Mountaineer.jpg",
-    "Elven Ranger": "ElvenRanger.jpg",
-    "Wilderness Stalker": "Wildernessstalker.jpg",
-    "Earthcaller": "Earthcaller.jpg",
-    "Witch Doctor": "witch_doctor.jpg",
-    "Spiritwalker": "spirit_walk.jpg",
-    "Spirit Champion": "spirit_champ.jpg",
-    "Scarlet Champion": "scarlet_champ.jpg",
-    "Exemplar": "Exemplar.jpg",
-    "Templar": "Templar.png",
-    "Priestess of the Moon": "Moon.jpg",
-    "Apothecary": "Apothecary.jpg",
-    "Shadow Hunter": "shadow_hunter.jpg",
-    "Lightslayer": "Lightslayer.jpg",
-    "Bloodmage": "Bloodmage.jpg",
-    "Techno-mage": "Techno-mage.jpg",
-    "Spellblade": "Spellblade.jpg",
-    "Hedge Wizard": "Hedgewizard.jpg",
-    "Archmage of Kirin Tor": "kirin_tor.jpg",
-    "Barbarian": "barbarian.jpg",
+# ── Sphere definitions (matching CatalogUI.lua) ──
+SPHERE_ORDER = ["light", "life", "chaos", "reality", "order", "death", "shadow"]
+
+SPHERE_COLORS = {
+    "light":   "#fff2b0",
+    "life":    "#7ec850",
+    "chaos":   "#50e650",
+    "reality": "#c8a862",
+    "order":   "#5cc0e8",
+    "death":   "#b060d8",
+    "shadow":  "#7848b0",
 }
 
-CLASS_ORDER = [
-    ("WARRIOR", "Warrior", "#C69B6D", "&#9876;"),
-    ("ROGUE", "Rogue", "#FFF468", "&#128481;"),
-    ("WARLOCK", "Warlock", "#8788EE", "&#128302;"),
-    ("DRUID", "Druid", "#FF7C0A", "&#127807;"),
-    ("HUNTER", "Hunter", "#AAD372", "&#127993;"),
-    ("SHAMAN", "Shaman", "#0070DD", "&#9889;"),
-    ("PALADIN", "Paladin", "#F48CBA", "&#128737;"),
-    ("PRIEST", "Priest", "#FFFFFF", "&#10024;"),
-    ("MAGE", "Mage", "#3FC7EB", "&#10052;"),
-]
+SPHERE_NAMES = {
+    "light":   "Light",
+    "life":    "Life",
+    "chaos":   "Chaos",
+    "reality": "Reality",
+    "order":   "Order",
+    "death":   "Death",
+    "shadow":  "Shadow",
+}
 
-CHAR_ORDER_BY_CLASS = {
-    "WARRIOR": ["Mountain King", "Sister of Steel", "Brewmaster", "Runemaster", "Berserker", "Blademaster", "Brave", "Tinker"],
-    "ROGUE": ["Barbarian", "Prospector", "Buccaneer", "Warden", "Demon Hunter"],
-    "WARLOCK": ["Pyremaster", "Death Knight", "Necromancer"],
-    "DRUID": ["Druid of the Claw", "Dragonsworn", "Ley Walker", "Plagueshifter", "Savagekin"],
-    "HUNTER": ["Beastmaster", "Mountaineer", "Elven Ranger", "Wilderness Stalker"],
-    "SHAMAN": ["Earthcaller", "Witch Doctor", "Spiritwalker", "Spirit Champion"],
-    "PALADIN": ["Scarlet Champion", "Exemplar", "Templar"],
-    "PRIEST": ["Priestess of the Moon", "Apothecary", "Shadow Hunter", "Lightslayer"],
-    "MAGE": ["Bloodmage", "Techno-mage", "Spellblade", "Hedge Wizard", "Archmage of Kirin Tor"],
+CLASS_SPHERE = {
+    "Beastmaster":        "reality",
+    "Berserker":          "reality",
+    "Barbarian":          "reality",
+    "Mountaineer":        "reality",
+    "Ranger":             "reality",
+    "Mountain King":      "reality",
+    "Brewmaster":         "reality",
+    "Wilderness Stalker": "reality",
+    "Prospector":         "reality",
+    "Buccaneer":          "reality",
+    "Brave":              "reality",
+    "Death Knight":       "shadow",
+    "Twilight Cultist":   "shadow",
+    "Lightslayer":        "shadow",
+    "Hexxer":             "shadow",
+    "Shadow Hunter":      "shadow",
+    "Witch Doctor":       "shadow",
+    "Plagueshifter":      "life",
+    "Earthcaller":        "life",
+    "Warden":             "life",
+    "Savagekin":          "life",
+    "Elven Archer":       "life",
+    "Druid of the Claw":  "life",
+    "Druid of the Wild":  "life",
+    "Dragonsworn":        "life",
+    "Techno-mage":        "order",
+    "Ley Walker":         "order",
+    "Runemaster":         "order",
+    "Sister of Steel":    "order",
+    "Kirin Tor Mage":     "order",
+    "Spellblade":         "order",
+    "Tinker":             "order",
+    "Scarlet Champion":   "light",
+    "Moon Priest":        "light",
+    "Exemplar":           "light",
+    "Templar":            "light",
+    "Shieldbearer":       "light",
+    "Apothecary":         "death",
+    "Necromancer":        "death",
+    "Spiritwalker":       "death",
+    "Spirit Champion":    "death",
+    "Bloodmage":          "chaos",
+    "Pyremaster":         "chaos",
+    "Hedge Wizard":       "chaos",
+    "Blademaster":        "chaos",
+    "Demon Hunter":       "chaos",
+}
+
+# ── Portrait filename mapping (display name → file in portraits/) ──
+PORTRAIT_MAP = {
+    "Mountain King":      "Mountain_king.jpg",
+    "Sister of Steel":    "Sistersteel.jpg",
+    "Brewmaster":         "brewmaster.jpg",
+    "Runemaster":         "Runemaster.jpg",
+    "Berserker":          "berserker.jpg",
+    "Blademaster":        "blademaster.jpg",
+    "Brave":              "brave.jpg",
+    "Tinker":             "tinker.jpg",
+    "Prospector":         "pros.jpg",
+    "Buccaneer":          "Buccaneer.jpg",
+    "Warden":             "warden.jpg",
+    "Demon Hunter":       "DH.jpg",
+    "Ranger":             "dark_ranger.jpg",
+    "Barbarian":          "barbarian.jpg",
+    "Pyremaster":         "Pyremaster.jpg",
+    "Death Knight":       "Death_Knight.jpg",
+    "Necromancer":        "Necromancer.jpg",
+    "Druid of the Claw":  "Claw.jpg",
+    "Druid of the Wild":  "savage.jpg",
+    "Dragonsworn":        "dragonsworn.jpg",
+    "Plagueshifter":      "Plagueshifter.jpg",
+    "Savagekin":          "Savagekin.jpg",
+    "Beastmaster":        "Orcbeastmaster.jpg",
+    "Mountaineer":        "Mountaineer.jpg",
+    "Elven Archer":       "ElvenRanger.jpg",
+    "Wilderness Stalker": "Wildernessstalker.jpg",
+    "Earthcaller":        "Earthcaller.jpg",
+    "Witch Doctor":       "witch_doctor.jpg",
+    "Spiritwalker":       "spirit_walk.jpg",
+    "Spirit Champion":    "spirit_champ.jpg",
+    "Scarlet Champion":   "scarlet_champ.jpg",
+    "Exemplar":           "Exemplar.jpg",
+    "Templar":            "Templar.png",
+    "Moon Priest":        "Moon.jpg",
+    "Apothecary":         "Apothecary.jpg",
+    "Shadow Hunter":      "shadow_hunter.jpg",
+    "Lightslayer":        "Lightslayer.jpg",
+    "Bloodmage":          "Bloodmage.jpg",
+    "Techno-mage":        "Techno-mage.jpg",
+    "Spellblade":         "Spellblade.jpg",
+    "Hedge Wizard":       "Hedgewizard.jpg",
+    "Kirin Tor Mage":     "kirin_tor.jpg",
+    "Ley Walker":         "ley.jpg",
 }
 
 TALENT_TREES = {
@@ -93,13 +143,14 @@ TALENT_TREES = {
 }
 
 
+# ── File / Lua parsing ──
+
 def read_file(path):
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
 
 def extract_braced_block(text, start_pos):
-    """From position right after opening {, find matching } using brace counting."""
     depth = 1
     pos = start_pos
     while pos < len(text) and depth > 0:
@@ -109,14 +160,12 @@ def extract_braced_block(text, start_pos):
         elif ch == '}':
             depth -= 1
         elif ch == '"':
-            # Skip string contents
             pos += 1
             while pos < len(text) and text[pos] != '"':
                 if text[pos] == '\\':
                     pos += 1
                 pos += 1
         elif ch == '-' and pos + 1 < len(text) and text[pos + 1] == '-':
-            # Skip comment to end of line
             while pos < len(text) and text[pos] != '\n':
                 pos += 1
         pos += 1
@@ -133,18 +182,28 @@ def parse_lore_data(text):
 
 
 def parse_talent_requirements(text):
+    """Parse talent requirements keyed by CLASS_Spec (e.g. WARRIOR_Slam)."""
     talents = {}
-    current_char = None
+    current_key = None
+    current_roles = None
     for line in text.split("\n"):
-        m = re.match(r'\s*\["([^"]+)"\]\s*=\s*\{', line)
+        # Match both ["KEY"] and ['KEY'] formats
+        m = re.match(r"""\s*\[['"]([^'"]+)['"]\]\s*=\s*\{""", line)
         if m:
-            current_char = m.group(1)
-            talents[current_char] = []
+            current_key = m.group(1)
+            talents[current_key] = {"entries": [], "roles": None}
+            # Check for roles on same line
+            rm = re.search(r'roles\s*=\s*"([^"]*)"', line)
+            if rm:
+                talents[current_key]["roles"] = rm.group(1)
             continue
-        if current_char is not None:
+        if current_key is not None:
+            rm = re.search(r'roles\s*=\s*"([^"]*)"', line)
+            if rm:
+                talents[current_key]["roles"] = rm.group(1)
             m = re.match(r'\s*R\("([^"]+)",\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+))?\)', line)
             if m:
-                talents[current_char].append({
+                talents[current_key]["entries"].append({
                     "name": m.group(1),
                     "tab": int(m.group(2)),
                     "rank": int(m.group(3)),
@@ -152,12 +211,11 @@ def parse_talent_requirements(text):
                     "endLevel": int(m.group(5)) if m.group(5) else None,
                 })
             if re.match(r'\s*\},?\s*$', line) and not re.match(r'\s*R\(', line):
-                current_char = None
+                current_key = None
     return talents
 
 
 def parse_q_from_text(text):
-    """Extract Q() entries from a text block."""
     quests = []
     for qm in re.finditer(r'Q\("((?:[^"\\]|\\.)*)",\s*(\d+),\s*(\d+)\)', text):
         quests.append({
@@ -169,7 +227,6 @@ def parse_q_from_text(text):
 
 
 def parse_character_data(text):
-    # Parse challenge descriptions
     challenge_descs = {}
     cd_start = text.find("CCE.ChallengeDescriptions")
     if cd_start >= 0:
@@ -186,18 +243,14 @@ def parse_character_data(text):
     chars_brace = text.find("{", chars_start)
     chars_text = text[chars_brace + 1:]
 
-    # Find character blocks
     char_pattern = re.compile(r'\["([^"]+)"\]\s*=\s*\{')
-    # Filter to only character names (not challenge descriptions which were already parsed)
     char_matches = []
     for m in char_pattern.finditer(chars_text):
         name = m.group(1)
-        # Must have a class field nearby
         block_start = m.end()
         peek = chars_text[block_start:block_start + 200]
-        if 'class' in peek and ('WARRIOR' in peek or 'ROGUE' in peek or 'WARLOCK' in peek or
-                                'DRUID' in peek or 'HUNTER' in peek or 'SHAMAN' in peek or
-                                'PALADIN' in peek or 'PRIEST' in peek or 'MAGE' in peek):
+        if 'class' in peek and any(c in peek for c in
+                ['WARRIOR', 'ROGUE', 'WARLOCK', 'DRUID', 'HUNTER', 'SHAMAN', 'PALADIN', 'PRIEST', 'MAGE']):
             char_matches.append((name, block_start))
 
     for i, (name, start) in enumerate(char_matches):
@@ -210,20 +263,33 @@ def parse_character_data(text):
 
 
 def parse_single_char(name, block):
-    char = {"name": name}
+    char = {"key": name}
 
-    # Simple string fields
-    for field in ["class", "spec", "race", "gender", "questTheme", "gameplay"]:
+    # Split Name_CLASS key into display name and class
+    parts = name.rsplit("_", 1)
+    if len(parts) == 2 and parts[1] in ("WARRIOR", "ROGUE", "WARLOCK", "DRUID", "HUNTER", "SHAMAN", "PALADIN", "PRIEST", "MAGE"):
+        char["name"] = parts[0]
+        char["class"] = parts[1]
+    else:
+        # Fallback: read class from block
+        char["name"] = name
+        cm = re.search(r'class\s*=\s*"([^"]*)"', block)
+        char["class"] = cm.group(1) if cm else "UNKNOWN"
+
+    for field in ["spec", "race", "gender", "questTheme", "gameplay"]:
         m = re.search(rf'^\s*{field}\s*=\s*"([^"]*)"', block, re.MULTILINE)
         if m:
             char[field] = m.group(1)
 
-    # Boolean selfFound
+    # Also read class from block in case key parsing differs
+    cm = re.search(r'^\s*class\s*=\s*"([^"]*)"', block, re.MULTILINE)
+    if cm:
+        char["class"] = cm.group(1)
+
     m = re.search(r'^\s*selfFound\s*=\s*(true|false)', block, re.MULTILINE)
     if m:
         char["selfFound"] = m.group(1) == "true"
 
-    # selfFoundByFaction
     m = re.search(r'selfFoundByFaction\s*=\s*\{', block)
     if m:
         sf_block = extract_braced_block(block, m.end())
@@ -241,13 +307,11 @@ def parse_single_char(name, block):
             else:
                 char["selfFound"] = False
 
-    # Professions
     char["professions"] = []
     m = re.search(r'^\s*professions\s*=\s*\{([^}]*)\}', block, re.MULTILINE)
     if m:
         char["professions"] = re.findall(r'"([^"]+)"', m.group(1))
 
-    # Recommended profession
     m = re.search(r'recommendedProfession\s*=\s*\{', block)
     if m:
         rp_block = extract_braced_block(block, m.end())
@@ -256,23 +320,14 @@ def parse_single_char(name, block):
         if nm and rm:
             char["recommendedProfession"] = {
                 "name": nm.group(1),
-                "reason": rm.group(2) if rm.lastindex >= 2 else rm.group(1),
+                "reason": rm.group(1).replace('\\"', '"').replace("\\'", "'"),
             }
-            char["recommendedProfession"]["reason"] = rm.group(1).replace('\\"', '"').replace("\\'", "'")
 
-    # Equipment
     char["equipment"] = parse_e_field(block, "equipment")
-
-    # Challenges
     char["challenges"] = parse_e_field(block, "challenges")
-
-    # Optional challenges
     char["optionalChallenges"] = parse_e_field(block, "optionalChallenges")
-
-    # Simple quests
     char["quests"] = parse_q_field(block, "quests")
 
-    # questsByFaction
     m = re.search(r'questsByFaction\s*=\s*\{', block)
     if m:
         faction_block = extract_braced_block(block, m.end())
@@ -281,7 +336,6 @@ def parse_single_char(name, block):
             fm = re.search(rf'{faction}\s*=\s*\{{', faction_block)
             if fm:
                 fb = extract_braced_block(faction_block, fm.end())
-                # Check for default/homebound inside
                 dm = re.search(r'default\s*=\s*\{', fb)
                 if dm:
                     db = extract_braced_block(fb, dm.end())
@@ -289,7 +343,6 @@ def parse_single_char(name, block):
                 else:
                     char["questsByFaction"][faction] = parse_q_from_text(fb)
 
-    # questsByHomebound
     m = re.search(r'questsByHomebound\s*=\s*\{', block)
     if m:
         hb_block = extract_braced_block(block, m.end())
@@ -300,7 +353,6 @@ def parse_single_char(name, block):
             if quests:
                 char["quests"] = quests
 
-    # questGroups
     m = re.search(r'questGroups\s*=\s*\{', block)
     if m:
         qg_block = extract_braced_block(block, m.end())
@@ -310,17 +362,14 @@ def parse_single_char(name, block):
         if groups:
             char["questGroups"] = groups
 
-    # Companion
     m = re.search(r'^\s*companion\s*=\s*E\("([^"]+)",\s*(\d+)\)', block, re.MULTILINE)
     if m:
         char["companion"] = {"desc": m.group(1), "level": int(m.group(2))}
 
-    # Hunter pet
     m = re.search(r'^\s*pet\s*=\s*E\("([^"]+)",\s*(\d+)\)', block, re.MULTILINE)
     if m:
         char["pet"] = {"desc": m.group(1), "level": int(m.group(2))}
 
-    # Mount
     m = re.search(r'^\s*mount\s*=\s*E\("([^"]+)",\s*(\d+)\)', block, re.MULTILINE)
     if m:
         char["mount"] = {"desc": m.group(1), "level": int(m.group(2))}
@@ -329,7 +378,6 @@ def parse_single_char(name, block):
 
 
 def parse_e_field(block, field_name):
-    """Parse E() entries from a named field using brace counting."""
     entries = []
     m = re.search(rf'^\s*{field_name}\s*=\s*\{{', block, re.MULTILINE)
     if not m:
@@ -347,13 +395,10 @@ def parse_e_field(block, field_name):
 
 
 def parse_q_field(block, field_name):
-    """Parse Q() entries from a simple quests field using brace counting."""
     entries = []
-    # Only match top-level quests = { ... }, not questsByFaction etc.
     m = re.search(rf'^\s*{field_name}\s*=\s*\{{', block, re.MULTILINE)
     if not m:
         return entries
-    # Make sure it's not questsByFaction or questsByHomebound
     line_start = block.rfind('\n', 0, m.start()) + 1
     line = block[line_start:m.end()]
     if 'questsBy' in line:
@@ -379,6 +424,9 @@ def make_initials(name):
 def make_wiki_url(name):
     return "https://warcraft.wiki.gg/wiki/" + name.replace(" ", "_")
 
+def title_case(s):
+    return s[0].upper() + s[1:].lower() if s else s
+
 def render_level(entry):
     level = entry.get("level", 1)
     end = entry.get("endLevel")
@@ -387,13 +435,13 @@ def render_level(entry):
     return f"Lv {level}"
 
 
-def render_character(char, color, lore, talents, challenge_descs, wow_class):
+def render_build_details(char, lore, talents_db, challenge_descs):
+    """Render detail sections for a single build."""
+    wow_class = char["class"]
     name = char["name"]
-    slug = make_slug(name)
-    initials = make_initials(name)
-    portrait = PORTRAIT_MAP.get(name)
-    wiki_url = make_wiki_url(name)
+    parts = []
 
+    # Meta info
     sf = char.get("selfFound", True)
     if sf is True:
         sf_display = "Yes"
@@ -402,25 +450,17 @@ def render_character(char, color, lore, talents, challenge_descs, wow_class):
     else:
         sf_display = str(sf)
 
-    meta_parts = [f'<span class="ml">Spec:</span> {esc(char.get("spec", ""))}']
+    meta = [f'<span class="ml">Spec:</span> {esc(char.get("spec", ""))}']
     race = char.get("race", "Any race")
-    meta_parts.append(f'<span class="ml">Race:</span> {esc(race) if race != "Any race" else "Any"}')
+    meta.append(f'<span class="ml">Race:</span> {esc(race) if race != "Any race" else "Any"}')
     gender = char.get("gender", "Any gender")
     if gender != "Any gender":
-        meta_parts.append(f'<span class="ml">Gender:</span> {esc(gender)}')
-    meta_parts.append(f'<span class="ml">Self-Found:</span> {esc(sf_display)}')
-    meta_line = " &middot; ".join(meta_parts)
-    meta_line += f' &middot; <a href="{esc(wiki_url)}" target="_blank" rel="noopener" style="color:{color};font-weight:600;font-size:.82rem" title="Warcraft Wiki">&#128214; Wiki</a>'
-
-    if portrait:
-        avatar_html = f'<img src="portraits/{esc(portrait)}" alt="{esc(name)}" class="avatar-img">'
-        fb_style = f'background:{color}22;border-color:{color};display:none'
-    else:
-        avatar_html = ''
-        fb_style = f'background:{color}22;border-color:{color}'
-    avatar_section = f'<div class="avatar-wrap">{avatar_html}<div class="avatar-fb" style="{fb_style}"><span style="color:{color}">{initials}</span></div></div>'
-
-    body_parts = []
+        meta.append(f'<span class="ml">Gender:</span> {esc(gender)}')
+    meta.append(f'<span class="ml">Self-Found:</span> {esc(sf_display)}')
+    gameplay = char.get("gameplay")
+    if gameplay:
+        meta.append(f'<span class="ml">Gameplay:</span> {esc(gameplay)}')
+    parts.append(f'<div class="meta">{" &middot; ".join(meta)}</div>')
 
     # Lore
     lore_text = lore.get(name, "")
@@ -429,42 +469,45 @@ def render_character(char, color, lore, talents, challenge_descs, wow_class):
         summary = ". ".join(sentences[:3])
         if not summary.endswith("."):
             summary += "."
-        body_parts.append(f'<div class="lore"><p>{esc(summary)}</p></div>')
+        parts.append(f'<div class="lore"><p>{esc(summary)}</p></div>')
 
     # Professions
     if char.get("professions"):
         items = "".join(f"<li>{esc(p)}</li>" for p in char["professions"])
-        body_parts.append(f'<div class="rs"><h4>Professions (Required)</h4><ul>{items}</ul></div>')
+        parts.append(f'<div class="rs"><h4>Professions (Required)</h4><ul>{items}</ul></div>')
 
-    # Recommended profession
     rec = char.get("recommendedProfession")
     if rec:
-        body_parts.append(f'<div class="rs"><h4>Recommended Profession</h4><p><strong>{esc(rec["name"])}</strong> &mdash; {esc(rec["reason"])}</p></div>')
+        parts.append(f'<div class="rs"><h4>Recommended Profession</h4><p><strong>{esc(rec["name"])}</strong> &mdash; {esc(rec["reason"])}</p></div>')
 
-    # Challenge rules
+    # Challenges
     if char.get("challenges"):
         rows = ""
         for c in char["challenges"]:
             desc_text = challenge_descs.get(c["desc"], c["desc"])
             rows += f'<tr><td><strong>{esc(c["desc"])}</strong></td><td>{render_level(c)}</td><td>{esc(desc_text)}</td></tr>'
-        body_parts.append(f'<div class="rs"><h4>Challenge Rules</h4><table class="rt"><tr><th>Challenge</th><th>Level</th><th>Description</th></tr>{rows}</table></div>')
+        parts.append(f'<div class="rs"><h4>Challenge Rules</h4><table class="rt"><tr><th>Challenge</th><th>Level</th><th>Description</th></tr>{rows}</table></div>')
 
     # Equipment
     if char.get("equipment"):
         rows = ""
         for e in char["equipment"]:
             rows += f'<tr><td>{esc(e["desc"])}</td><td>{render_level(e)}</td></tr>'
-        body_parts.append(f'<div class="rs"><h4>Equipment Requirements</h4><table class="rt"><tr><th>Requirement</th><th>Level</th></tr>{rows}</table></div>')
+        parts.append(f'<div class="rs"><h4>Equipment Requirements</h4><table class="rt"><tr><th>Requirement</th><th>Level</th></tr>{rows}</table></div>')
 
-    # Talents
-    char_talents = talents.get(name, [])
-    if char_talents:
+    # Talents (lookup by CLASS_Spec key)
+    talent_key = f'{wow_class}_{char.get("spec", "")}'
+    talent_data = talents_db.get(talent_key)
+    if talent_data and talent_data["entries"]:
         trees = TALENT_TREES.get(wow_class, {})
         rows = ""
-        for t in char_talents:
+        for t in talent_data["entries"]:
             tree_name = trees.get(t["tab"], f"Tree {t['tab']}")
             rows += f'<tr><td>{esc(t["name"])}</td><td>{esc(tree_name)}</td><td>{t["rank"]}</td><td>Lv {t["level"]}</td></tr>'
-        body_parts.append(f'<div class="rs"><h4>Talent Requirements</h4><table class="rt"><tr><th>Talent</th><th>Tree</th><th>Rank</th><th>By Level</th></tr>{rows}</table></div>')
+        roles_html = ""
+        if talent_data.get("roles"):
+            roles_html = f' <span class="qt">({esc(talent_data["roles"])})</span>'
+        parts.append(f'<div class="rs"><h4>Talent Requirements{roles_html}</h4><table class="rt"><tr><th>Talent</th><th>Tree</th><th>Rank</th><th>By Level</th></tr>{rows}</table></div>')
 
     # Quests
     quests = char.get("quests", [])
@@ -473,16 +516,14 @@ def render_character(char, color, lore, talents, challenge_descs, wow_class):
     has_faction_quests = bool(char.get("questsByFaction"))
 
     if has_faction_quests and not quests:
-        # Pure faction-based quests (Brewmaster, Spellblade, Necromancer, etc.)
         for faction in ["Alliance", "Horde"]:
             fq = char["questsByFaction"].get(faction, [])
             if fq:
                 rows = "".join(f'<tr><td>{esc(q["name"])}</td><td>Lv {q["level"]}</td></tr>' for q in fq)
                 suffix = " (A)" if faction == "Alliance" else " (H)"
                 theme = f'{quest_theme}{suffix}' if quest_theme else faction
-                body_parts.append(f'<div class="rs"><h4>Quest Milestones <span class="qt">({esc(theme)})</span></h4><table class="rt"><tr><th>Quest</th><th>By Level</th></tr>{rows}</table></div>')
+                parts.append(f'<div class="rs"><h4>Quest Milestones <span class="qt">({esc(theme)})</span></h4><table class="rt"><tr><th>Quest</th><th>By Level</th></tr>{rows}</table></div>')
     elif quests and quest_groups:
-        # Multi-group quests (Shadow Hunter, Graven One)
         rows = ""
         offset = 0
         for qg in quest_groups:
@@ -493,64 +534,139 @@ def render_character(char, color, lore, talents, challenge_descs, wow_class):
                 rows += f'<tr><td colspan="2" style="color:var(--dim);font-style:italic;border-bottom:1px solid var(--brd);padding-top:8px"><strong>{esc(theme)}</strong></td></tr>'
                 rows += "".join(f'<tr><td>{esc(q["name"])}</td><td>Lv {q["level"]}</td></tr>' for q in group_quests)
             offset += count
-        body_parts.append(f'<div class="rs"><h4>Quest Milestones</h4><table class="rt"><tr><th>Quest</th><th>By Level</th></tr>{rows}</table></div>')
+        parts.append(f'<div class="rs"><h4>Quest Milestones</h4><table class="rt"><tr><th>Quest</th><th>By Level</th></tr>{rows}</table></div>')
     elif quests:
         rows = "".join(f'<tr><td>{esc(q["name"])}</td><td>Lv {q["level"]}</td></tr>' for q in quests)
         theme_html = f' <span class="qt">({esc(quest_theme)})</span>' if quest_theme else ""
-        body_parts.append(f'<div class="rs"><h4>Quest Milestones{theme_html}</h4><table class="rt"><tr><th>Quest</th><th>By Level</th></tr>{rows}</table></div>')
+        parts.append(f'<div class="rs"><h4>Quest Milestones{theme_html}</h4><table class="rt"><tr><th>Quest</th><th>By Level</th></tr>{rows}</table></div>')
 
     # Companion / Pet / Mount
-    cpm_items = []
+    cpm = []
     if char.get("companion"):
         c = char["companion"]
-        cpm_items.append(f'<li><strong>Companion:</strong> {esc(c["desc"])} (Lv {c["level"]})</li>')
+        cpm.append(f'<li><strong>Companion:</strong> {esc(c["desc"])} (Lv {c["level"]})</li>')
     if char.get("pet"):
         p = char["pet"]
-        cpm_items.append(f'<li><strong>Hunter Pet:</strong> {esc(p["desc"])} (Lv {p["level"]})</li>')
+        cpm.append(f'<li><strong>Hunter Pet:</strong> {esc(p["desc"])} (Lv {p["level"]})</li>')
     if char.get("mount"):
         mt = char["mount"]
-        cpm_items.append(f'<li><strong>Mount:</strong> {esc(mt["desc"])} (Lv {mt["level"]})</li>')
-    if cpm_items:
-        body_parts.append(f'<div class="rs"><h4>Companion / Pet / Mount</h4><ul>{"".join(cpm_items)}</ul></div>')
+        cpm.append(f'<li><strong>Mount:</strong> {esc(mt["desc"])} (Lv {mt["level"]})</li>')
+    if cpm:
+        parts.append(f'<div class="rs"><h4>Companion / Pet / Mount</h4><ul>{"".join(cpm)}</ul></div>')
 
-    body_html = "".join(body_parts)
-
-    return f"""
-    <div class="cc" id="{slug}">
-      <div class="ch" style="border-left:4px solid {color}" onclick="this.parentElement.classList.toggle('ex')">
-        <div class="chc">
-          {avatar_section}
-          <div class="ctb">
-            <h3 style="color:{color}">{esc(name)}</h3>
-            <div class="meta">{meta_line}</div>
-          </div>
-        </div>
-        <span class="ei">&#9660;</span>
-      </div>
-      <div class="cb">{body_html}</div>
-    </div>
-"""
+    return "".join(parts)
 
 
 def generate_html(characters, lore, talents, challenge_descs):
-    total_chars = sum(len(CHAR_ORDER_BY_CLASS.get(c, [])) for c, _, _, _ in CLASS_ORDER)
+    """Generate flat-grid HTML grouped by sphere."""
 
-    nav_links = "\n".join(
-        f'<a href="#{cn.lower()}" class="nc" style="color:{co}">{ic} {cn}</a>'
-        for _, cn, co, ic in CLASS_ORDER
-    )
+    # Group characters by display name → list of builds
+    name_builds = defaultdict(list)
+    for key, char in characters.items():
+        name_builds[char["name"]].append(char)
 
-    sections = []
-    for class_key, class_name, color, icon in CLASS_ORDER:
-        char_names = CHAR_ORDER_BY_CLASS.get(class_key, [])
-        cards = []
-        for cn in char_names:
-            char = characters.get(cn)
-            if char:
-                cards.append(render_character(char, color, lore, talents, challenge_descs, class_key))
+    # Sort builds within each name by class
+    class_order = ["WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID"]
+    for name in name_builds:
+        name_builds[name].sort(key=lambda c: class_order.index(c["class"]) if c["class"] in class_order else 99)
+
+    total_names = len(name_builds)
+    total_builds = sum(len(b) for b in name_builds.values())
+
+    # Group by sphere
+    sphere_groups = defaultdict(list)
+    for name in name_builds:
+        sphere = CLASS_SPHERE.get(name, "reality")
+        sphere_groups[sphere].append(name)
+    for sphere in sphere_groups:
+        sphere_groups[sphere].sort()
+
+    # Sphere filter bar
+    sphere_btns = []
+    for s in SPHERE_ORDER:
+        color = SPHERE_COLORS[s]
+        label = SPHERE_NAMES[s]
+        count = len(sphere_groups.get(s, []))
+        sphere_btns.append(f'<button class="sphere-btn" data-sphere="{s}" style="--sc:{color}" onclick="filterSphere(\'{s}\')">{label} <span class="sphere-count">{count}</span></button>')
+    sphere_bar = f'<button class="sphere-btn active" data-sphere="all" style="--sc:var(--gold)" onclick="filterSphere(\'all\')">All <span class="sphere-count">{total_names}</span></button>\n' + "\n".join(sphere_btns)
+
+    # Build grid cards
+    grid_cards = []
+    for sphere in SPHERE_ORDER:
+        names = sphere_groups.get(sphere, [])
+        color = SPHERE_COLORS[sphere]
+        for name in names:
+            slug = make_slug(name)
+            builds = name_builds[name]
+            portrait = PORTRAIT_MAP.get(name)
+            initials = make_initials(name)
+            build_count = len(builds)
+            classes = [title_case(b["class"]) for b in builds]
+            classes_str = " / ".join(classes)
+
+            if portrait:
+                img_html = f'<img src="portraits/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
+                fb_style = 'display:none'
             else:
-                print(f"WARNING: Character '{cn}' not found in data")
-        sections.append(f'<div class="cs" id="{class_name.lower()}"><h2 style="color:{color}">{icon} {class_name}</h2>\n{"".join(cards)}</div>')
+                img_html = ''
+                fb_style = f'background:{color}22;border-color:{color}'
+
+            badge_html = ""
+            if build_count > 1:
+                badge_html = f'<span class="build-badge">{build_count}</span>'
+
+            grid_cards.append(f'''<div class="grid-card" data-sphere="{sphere}" data-name="{esc(name.lower())}" data-classes="{esc(classes_str.lower())}" id="{slug}" onclick="toggleCard(this)">
+  <div class="grid-portrait">
+    {img_html}
+    <div class="grid-fb" style="{fb_style}"><span style="color:{color}">{initials}</span></div>
+    {badge_html}
+  </div>
+  <div class="grid-name" style="color:{color}">{esc(name)}</div>
+  <div class="grid-classes">{esc(classes_str)}</div>
+</div>''')
+
+    # Build detail panels (hidden, shown on click)
+    detail_panels = []
+    for sphere in SPHERE_ORDER:
+        names = sphere_groups.get(sphere, [])
+        color = SPHERE_COLORS[sphere]
+        for name in names:
+            slug = make_slug(name)
+            builds = name_builds[name]
+            wiki_url = make_wiki_url(name)
+
+            if len(builds) == 1:
+                # Single build — show details directly
+                build = builds[0]
+                details = render_build_details(build, lore, talents, challenge_descs)
+                header = f'{esc(name)} <span class="detail-class">({title_case(build["class"])})</span>'
+                detail_panels.append(f'''<div class="detail-panel" id="detail-{slug}" style="--accent:{color}">
+  <div class="detail-header">
+    <h3 style="color:{color}">{header}</h3>
+    <a href="{esc(wiki_url)}" target="_blank" rel="noopener" class="wiki-link" style="color:{color}">Wiki &#128214;</a>
+  </div>
+  {details}
+</div>''')
+            else:
+                # Multi-build — tabs
+                tabs_html = []
+                panels_html = []
+                for i, build in enumerate(builds):
+                    cls = title_case(build["class"])
+                    active = " active" if i == 0 else ""
+                    tabs_html.append(f'<button class="build-tab{active}" onclick="switchBuildTab(this, \'{slug}\', {i})">{cls}</button>')
+                    details = render_build_details(build, lore, talents, challenge_descs)
+                    display = "" if i == 0 else "display:none;"
+                    panels_html.append(f'<div class="build-panel" data-build="{slug}-{i}" style="{display}">{details}</div>')
+
+                detail_panels.append(f'''<div class="detail-panel" id="detail-{slug}" style="--accent:{color}">
+  <div class="detail-header">
+    <h3 style="color:{color}">{esc(name)}</h3>
+    <a href="{esc(wiki_url)}" target="_blank" rel="noopener" class="wiki-link" style="color:{color}">Wiki &#128214;</a>
+  </div>
+  <div class="build-tabs">{"".join(tabs_html)}</div>
+  {"".join(panels_html)}
+</div>''')
 
     return f'''<!DOCTYPE html>
 <html lang="en">
@@ -563,32 +679,62 @@ def generate_html(characters, lore, talents, challenge_descs):
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}}
 a{{color:var(--gold);text-decoration:none}}a:hover{{text-decoration:underline}}
+
+/* Hero */
 .hero{{text-align:center;padding:60px 20px 40px;background:linear-gradient(180deg,var(--bg3),var(--bg));border-bottom:1px solid var(--brd)}}
 .hero h1{{font-size:2.5rem;color:var(--gold);margin-bottom:12px;text-shadow:0 0 20px rgba(255,215,0,.3)}}
 .hero .sub{{font-size:1.15rem;color:var(--dim);max-width:700px;margin:0 auto 24px}}
 .badge{{display:inline-block;background:var(--bg3);border:1px solid var(--gold);color:var(--gold);padding:6px 16px;border-radius:20px;font-size:.9rem;margin:4px}}
-.about{{max-width:900px;margin:40px auto;padding:0 20px}}
+
+/* About */
+.about{{max-width:1100px;margin:40px auto;padding:0 20px}}
 .ag{{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:20px}}
 .ac{{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:20px}}
 .ac h3{{color:var(--gold);font-size:1rem;margin-bottom:8px}}.ac p{{font-size:.9rem;color:var(--dim)}}
-.cn{{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:20px;max-width:900px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:100;border-bottom:1px solid var(--brd)}}
-.nc{{padding:8px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.85rem;font-weight:600;transition:background .2s}}.nc:hover{{background:var(--bg3);text-decoration:none}}
-.sb{{max-width:900px;margin:20px auto;padding:0 20px}}
+
+/* Sphere filter */
+.sphere-bar{{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:20px;max-width:1100px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:100;border-bottom:1px solid var(--brd)}}
+.sphere-btn{{padding:8px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.85rem;font-weight:600;color:var(--sc);cursor:pointer;transition:all .2s}}
+.sphere-btn:hover,.sphere-btn.active{{background:var(--bg3);border-color:var(--sc)}}
+.sphere-count{{font-size:.75rem;opacity:.6;margin-left:2px}}
+
+/* Search */
+.sb{{max-width:1100px;margin:20px auto;padding:0 20px}}
 .sb input{{width:100%;padding:12px 16px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;color:var(--text);font-size:1rem;outline:none}}
 .sb input:focus{{border-color:var(--gold)}}.sb input::placeholder{{color:var(--dim)}}
-.cs{{max-width:900px;margin:40px auto 0;padding:0 20px}}
-.cs h2{{font-size:1.6rem;padding-bottom:12px;border-bottom:1px solid var(--brd);margin-bottom:16px}}
-.cc{{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;margin-bottom:12px;overflow:hidden;transition:border-color .2s}}.cc:hover{{border-color:#444}}
-.ch{{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;user-select:none}}
-.chc{{display:flex;align-items:center;gap:16px;flex:1;min-width:0}}
-.avatar-wrap{{width:52px;height:52px;flex-shrink:0;position:relative}}
-.avatar-img{{width:52px;height:52px;border-radius:10px;object-fit:cover}}
-.avatar-fb{{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;border:2px solid}}
-.avatar-fb span{{font-size:1.1rem;font-weight:800;letter-spacing:1px}}
-.ctb h3{{font-size:1.15rem;margin-bottom:2px}}.meta{{font-size:.82rem;color:var(--dim)}}.ml{{color:var(--text);font-weight:600}}
-.ei{{font-size:.8rem;color:var(--dim);transition:transform .2s;flex-shrink:0;margin-left:12px}}
-.cc.ex .ei{{transform:rotate(180deg)}}
-.cb{{display:none;padding:0 20px 20px}}.cc.ex .cb{{display:block}}
+
+/* Grid */
+.grid-wrap{{max-width:1100px;margin:20px auto;padding:0 20px}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px}}
+.grid-card{{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all .2s;position:relative}}
+.grid-card:hover{{border-color:#555;transform:translateY(-2px)}}
+.grid-card.active{{border-color:var(--gold);background:var(--bg3)}}
+.grid-portrait{{width:90px;height:90px;margin:0 auto 8px;position:relative}}
+.grid-img{{width:90px;height:90px;border-radius:50%;object-fit:cover}}
+.grid-fb{{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid}}
+.grid-fb span{{font-size:1.2rem;font-weight:800;letter-spacing:1px}}
+.build-badge{{position:absolute;top:-2px;right:-2px;background:var(--bg3);border:1px solid var(--brd);color:var(--gold);font-size:.7rem;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center}}
+.grid-name{{font-size:.9rem;font-weight:600;line-height:1.2}}
+.grid-classes{{font-size:.75rem;color:var(--dim);margin-top:2px}}
+
+/* Detail panel (inserted after grid) */
+.detail-wrap{{max-width:1100px;margin:0 auto;padding:0 20px}}
+.detail-panel{{display:none;background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:24px;margin:12px 0 24px;animation:fadeIn .2s}}
+.detail-panel.visible{{display:block}}
+@keyframes fadeIn{{from{{opacity:0;transform:translateY(-8px)}}to{{opacity:1;transform:translateY(0)}}}}
+.detail-header{{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--brd)}}
+.detail-header h3{{font-size:1.3rem}}
+.detail-class{{font-size:.9rem;font-weight:normal;opacity:.7}}
+.wiki-link{{font-size:.85rem;font-weight:600}}
+
+/* Build tabs */
+.build-tabs{{display:flex;gap:6px;margin-bottom:16px}}
+.build-tab{{padding:6px 16px;background:var(--bg);border:1px solid var(--brd);border-radius:6px;color:var(--dim);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}}
+.build-tab:hover{{color:var(--text);border-color:#555}}
+.build-tab.active{{color:var(--accent,var(--gold));border-color:var(--accent,var(--gold));background:var(--bg3)}}
+
+/* Shared detail styles */
+.meta{{font-size:.82rem;color:var(--dim);margin-bottom:12px}}.ml{{color:var(--text);font-weight:600}}
 .lore{{background:rgba(255,215,0,.05);border-left:3px solid var(--gold);padding:12px 16px;margin-bottom:16px;border-radius:0 6px 6px 0}}
 .lore p{{font-style:italic;font-size:.9rem;color:var(--dim)}}
 .rs{{margin-bottom:16px}}.rs h4{{color:var(--gold);font-size:.9rem;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}}
@@ -597,17 +743,27 @@ a{{color:var(--gold);text-decoration:none}}a:hover{{text-decoration:underline}}
 .rt{{width:100%;border-collapse:collapse;font-size:.88rem}}
 .rt th{{text-align:left;color:var(--dim);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--brd);font-size:.8rem;text-transform:uppercase;letter-spacing:.3px}}
 .rt td{{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.04)}}.rt tr:last-child td{{border-bottom:none}}
+
 footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;border-top:1px solid var(--brd);margin-top:60px}}
-@media(max-width:600px){{.hero h1{{font-size:1.8rem}}.ch{{padding:12px 14px}}.avatar-wrap,.avatar-img,.avatar-fb{{width:40px;height:40px}}.avatar-fb span{{font-size:.9rem}}.ctb h3{{font-size:1rem}}.rt{{font-size:.82rem}}}}
+
+@media(max-width:600px){{
+  .hero h1{{font-size:1.8rem}}
+  .grid{{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}}
+  .grid-portrait,.grid-img,.grid-fb{{width:70px;height:70px}}
+  .grid-name{{font-size:.8rem}}
+  .detail-panel{{padding:16px}}
+  .rt{{font-size:.82rem}}
+}}
 </style>
 </head>
 <body>
 <div class="hero">
   <h1>Classic Classes Enhanced</h1>
-  <p class="sub">{total_chars} lore-based character archetypes for WoW Classic. Pick an enhanced class and the addon tracks your challenge rules, gear restrictions, quest milestones, and talent requirements as you level.</p>
+  <p class="sub">{total_names} character archetypes across {total_builds} builds for WoW Classic. Pick an enhanced class and the addon tracks your challenge rules, gear restrictions, quest milestones, and talent requirements as you level.</p>
   <span class="badge">v0.8.6</span>
   <span class="badge">WoW Classic Era</span>
-  <span class="badge">{total_chars} Enhanced Classes</span>
+  <span class="badge">{total_names} Enhanced Classes</span>
+  <span class="badge">{total_builds} Builds</span>
 </div>
 <div class="about"><div class="ag">
   <div class="ac"><h3>Real-Time Tracking</h3><p>The addon monitors equipment, talents, quests, challenges, and more in real time. Violations are flagged instantly with alerts.</p></div>
@@ -615,17 +771,87 @@ footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bo
   <div class="ac"><h3>Auto-Detection</h3><p>Your enhanced class is determined by race, gender, and class. The addon detects it on login. Use <code>/cce pick</code> to choose manually.</p></div>
   <div class="ac"><h3>Installation</h3><p>Drop the <code>ClassicClassesEnhanced</code> folder into your <code>Interface/AddOns</code> directory. Works with Classic Era (Interface 11507).</p></div>
 </div></div>
-<nav class="cn">{nav_links}</nav>
-<div class="sb"><input type="text" id="si" placeholder="Search classes, challenges, talents..." oninput="fc()"></div>
-{chr(10).join(sections)}
+<nav class="sphere-bar">{sphere_bar}</nav>
+<div class="sb"><input type="text" id="si" placeholder="Search by name, class, or keyword..." oninput="searchCards()"></div>
+<div class="grid-wrap"><div class="grid" id="card-grid">
+{chr(10).join(grid_cards)}
+</div></div>
+<div class="detail-wrap" id="detail-container">
+{chr(10).join(detail_panels)}
+</div>
 <footer>
   <p>Classic Classes Enhanced by <strong>Beba</strong></p>
   <p><a href="https://buymeacoffee.com/berentbaris">Buy Me a Coffee</a></p>
 </footer>
 <script>
-function fc(){{const q=document.getElementById('si').value.toLowerCase();document.querySelectorAll('.cc').forEach(c=>{{c.style.display=c.textContent.toLowerCase().includes(q)?'':'none'}});document.querySelectorAll('.cs').forEach(s=>{{const v=[...s.querySelectorAll('.cc')].filter(c=>c.style.display!=='none');s.style.display=v.length===0?'none':''}})}}
-if(window.location.hash){{const el=document.querySelector(window.location.hash);if(el&&el.classList.contains('cc')){{el.classList.add('ex');setTimeout(()=>el.scrollIntoView({{behavior:'smooth',block:'start'}}),100)}}}}
+let activeSphere = 'all';
+let activeCard = null;
 
+function filterSphere(sphere) {{
+  activeSphere = sphere;
+  document.querySelectorAll('.sphere-btn').forEach(b => {{
+    b.classList.toggle('active', b.dataset.sphere === sphere);
+  }});
+  document.querySelectorAll('.grid-card').forEach(c => {{
+    c.style.display = (sphere === 'all' || c.dataset.sphere === sphere) ? '' : 'none';
+  }});
+  // Close any open detail
+  closeDetail();
+  searchCards();
+}}
+
+function searchCards() {{
+  const q = document.getElementById('si').value.toLowerCase();
+  document.querySelectorAll('.grid-card').forEach(c => {{
+    const sphereMatch = activeSphere === 'all' || c.dataset.sphere === activeSphere;
+    const textMatch = !q || c.dataset.name.includes(q) || c.dataset.classes.includes(q);
+    c.style.display = (sphereMatch && textMatch) ? '' : 'none';
+  }});
+}}
+
+function closeDetail() {{
+  document.querySelectorAll('.detail-panel.visible').forEach(p => p.classList.remove('visible'));
+  document.querySelectorAll('.grid-card.active').forEach(c => c.classList.remove('active'));
+  activeCard = null;
+}}
+
+function toggleCard(card) {{
+  const slug = card.id;
+  const panel = document.getElementById('detail-' + slug);
+  if (!panel) return;
+
+  if (activeCard === card) {{
+    closeDetail();
+    return;
+  }}
+
+  closeDetail();
+  activeCard = card;
+  card.classList.add('active');
+
+  // Move detail panel right after the grid
+  const container = document.getElementById('detail-container');
+  panel.classList.add('visible');
+  panel.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
+}}
+
+function switchBuildTab(btn, slug, idx) {{
+  const panel = document.getElementById('detail-' + slug);
+  if (!panel) return;
+  panel.querySelectorAll('.build-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  panel.querySelectorAll('.build-panel').forEach((p, i) => {{
+    p.style.display = (i === idx) ? '' : 'none';
+  }});
+}}
+
+// Deep link support
+if (window.location.hash) {{
+  const el = document.querySelector(window.location.hash);
+  if (el && el.classList.contains('grid-card')) {{
+    setTimeout(() => {{ toggleCard(el); el.scrollIntoView({{ behavior: 'smooth', block: 'start' }}); }}, 200);
+  }}
+}}
 </script></body>
 </html>'''
 
@@ -639,24 +865,21 @@ def main():
     talents = parse_talent_requirements(talent_lua)
     characters, challenge_descs = parse_character_data(char_lua)
 
-    print(f"Parsed {len(characters)} characters")
+    # Group by display name
+    name_builds = defaultdict(list)
+    for key, char in characters.items():
+        name_builds[char["name"]].append(char)
+
+    print(f"Parsed {len(characters)} builds across {len(name_builds)} enhanced classes")
     print(f"Parsed {len(lore)} lore entries")
-    print(f"Parsed {len(talents)} talent requirement entries")
+    print(f"Parsed {len(talents)} talent spec entries")
     print(f"Challenge descriptions: {len(challenge_descs)}")
 
-    for class_key, class_name, _, _ in CLASS_ORDER:
-        char_names = CHAR_ORDER_BY_CLASS.get(class_key, [])
-        found = [n for n in char_names if n in characters]
-        missing = [n for n in char_names if n not in characters]
-        print(f"  {class_name}: {len(found)} found" + (f", MISSING: {missing}" if missing else ""))
-
-    # Detail check
-    for cn in ["Brewmaster", "Spellblade", "Shadow Hunter", "Graven One", "Necromancer"]:
-        c = characters.get(cn, {})
-        q = c.get("quests", [])
-        qf = c.get("questsByFaction", {})
-        qg = c.get("questGroups")
-        print(f"  {cn}: quests={len(q)}, questsByFaction={'A:'+str(len(qf.get('Alliance',[])))+'|H:'+str(len(qf.get('Horde',[]))) if qf else 'none'}, questGroups={qg}")
+    # Check sphere coverage
+    for name in sorted(name_builds):
+        sphere = CLASS_SPHERE.get(name, "???")
+        builds = [b["class"] for b in name_builds[name]]
+        print(f"  {name}: {sphere} — {builds}")
 
     html_output = generate_html(characters, lore, talents, challenge_descs)
 

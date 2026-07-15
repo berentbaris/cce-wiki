@@ -1,9 +1,9 @@
 """Detect real format of .tga files (they're actually JPEG/PNG) and copy with correct extension."""
 import os, shutil
 
-SRC = r"C:\wow_addon\HardcoreClassesEnhanced\Backgrounds"
-DST = r"C:\hce-wiki\portraits"
-LOG = r"C:\hce-wiki\convert_log.txt"
+SRC = r"C:\wow_addon\ClassicClassesEnhanced\Backgrounds"
+DST = r"C:\cce-wiki\portraits"
+LOG = r"C:\cce-wiki\convert_log.txt"
 
 os.makedirs(DST, exist_ok=True)
 log_lines = []
