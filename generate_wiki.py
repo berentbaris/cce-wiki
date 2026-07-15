@@ -130,6 +130,30 @@ PORTRAIT_MAP = {
     "Ley Walker":         "ley.jpg",
 }
 
+RACE_ORDER = ["Human", "Dwarf", "Night Elf", "Gnome", "Orc", "Troll", "Tauren", "Undead"]
+RACE_FACTION = {
+    "Human": "alliance", "Dwarf": "alliance", "Night Elf": "alliance", "Gnome": "alliance",
+    "Orc": "horde", "Troll": "horde", "Tauren": "horde", "Undead": "horde",
+}
+
+RACE_CLASSES = {
+    "Human":     ["WARRIOR", "PALADIN", "ROGUE", "PRIEST", "MAGE", "WARLOCK"],
+    "Dwarf":     ["WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST"],
+    "Night Elf": ["WARRIOR", "HUNTER", "ROGUE", "PRIEST", "DRUID"],
+    "Gnome":     ["WARRIOR", "ROGUE", "MAGE", "WARLOCK"],
+    "Orc":       ["WARRIOR", "HUNTER", "ROGUE", "SHAMAN", "WARLOCK"],
+    "Troll":     ["WARRIOR", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE"],
+    "Tauren":    ["WARRIOR", "HUNTER", "SHAMAN", "DRUID"],
+    "Undead":    ["WARRIOR", "ROGUE", "PRIEST", "MAGE", "WARLOCK"],
+}
+
+CLASS_DISPLAY_ORDER = ["WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN", "MAGE", "WARLOCK", "DRUID"]
+CLASS_COLORS = {
+    "WARRIOR": "#C69B6D", "PALADIN": "#F48CBA", "HUNTER": "#AAD372",
+    "ROGUE": "#FFF468", "PRIEST": "#FFFFFF", "SHAMAN": "#0070DD",
+    "MAGE": "#3FC7EB", "WARLOCK": "#8788EE", "DRUID": "#FF7C0A",
+}
+
 TALENT_TREES = {
     "WARRIOR": {1: "Arms", 2: "Fury", 3: "Protection"},
     "ROGUE": {1: "Assassination", 2: "Combat", 3: "Subtlety"},
@@ -275,6 +299,13 @@ def parse_single_char(name, block):
         char["name"] = name
         cm = re.search(r'class\s*=\s*"([^"]*)"', block)
         char["class"] = cm.group(1) if cm else "UNKNOWN"
+
+    # Parse races list
+    rm = re.search(r'races\s*=\s*\{([^}]+)\}', block)
+    if rm:
+        char["races"] = re.findall(r'"([^"]+)"', rm.group(1))
+    else:
+        char["races"] = []
 
     for field in ["spec", "race", "gender", "questTheme", "gameplay"]:
         m = re.search(rf'^\s*{field}\s*=\s*"([^"]*)"', block, re.MULTILINE)
@@ -590,6 +621,24 @@ def generate_html(characters, lore, talents, challenge_descs):
         sphere_btns.append(f'<button class="sphere-btn" data-sphere="{s}" style="--sc:{color}" onclick="filterSphere(\'{s}\')">{label} <span class="sphere-count">{count}</span></button>')
     sphere_bar = f'<button class="sphere-btn active" data-sphere="all" style="--sc:var(--gold)" onclick="filterSphere(\'all\')">All <span class="sphere-count">{total_names}</span></button>\n' + "\n".join(sphere_btns)
 
+    # Race/class filter buttons
+    import json
+    race_btns = []
+    for r in RACE_ORDER:
+        faction = RACE_FACTION[r]
+        fc = "#3399ff" if faction == "alliance" else "#ff4444"
+        race_btns.append(f'<button class="filter-btn race-btn" data-race="{r.lower()}" style="--fc:{fc}" onclick="selectRace(\'{r.lower()}\')">{r}</button>')
+    race_btns_html = "\n    ".join(race_btns)
+
+    class_btns = []
+    for c in CLASS_DISPLAY_ORDER:
+        cc = CLASS_COLORS[c]
+        class_btns.append(f'<button class="filter-btn class-btn" data-class="{c.lower()}" style="--fc:{cc};display:none" onclick="selectClass(\'{c.lower()}\')">{title_case(c)}</button>')
+    class_btns_html = "\n    ".join(class_btns)
+
+    # Race→classes JSON for JS
+    race_classes_json = json.dumps({r.lower(): [c.lower() for c in classes] for r, classes in RACE_CLASSES.items()})
+
     # Build grid cards
     grid_cards = []
     for sphere in SPHERE_ORDER:
@@ -603,6 +652,15 @@ def generate_html(characters, lore, talents, challenge_descs):
             build_count = len(builds)
             classes = [title_case(b["class"]) for b in builds]
             classes_str = " / ".join(classes)
+            # Collect all races and base classes across all builds
+            all_races = set()
+            all_classes = set()
+            for b in builds:
+                all_classes.add(b["class"])
+                for r in b.get("races", []):
+                    all_races.add(r)
+            races_data = ",".join(sorted(all_races)).lower()
+            classes_data = ",".join(sorted(all_classes)).lower()
 
             if portrait:
                 img_html = f'<img src="portraits/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
@@ -615,7 +673,7 @@ def generate_html(characters, lore, talents, challenge_descs):
             if build_count > 1:
                 badge_html = f'<span class="build-badge">{build_count}</span>'
 
-            grid_cards.append(f'''<div class="grid-card" data-sphere="{sphere}" data-name="{esc(name.lower())}" data-classes="{esc(classes_str.lower())}" id="{slug}" onclick="toggleCard(this)">
+            grid_cards.append(f'''<div class="grid-card" data-sphere="{sphere}" data-name="{esc(name.lower())}" data-classes="{esc(classes_str.lower())}" data-races="{esc(races_data)}" data-baseclasses="{esc(classes_data)}" id="{slug}" onclick="toggleCard(this)">
   <div class="grid-portrait">
     {img_html}
     <div class="grid-fb" style="{fb_style}"><span style="color:{color}">{initials}</span></div>
@@ -698,6 +756,14 @@ a{{color:var(--gold);text-decoration:none}}a:hover{{text-decoration:underline}}
 .sphere-btn:hover,.sphere-btn.active{{background:var(--bg3);border-color:var(--sc)}}
 .sphere-count{{font-size:.75rem;opacity:.6;margin-left:2px}}
 
+/* Race / Class filters */
+.filter-wrap{{max-width:1100px;margin:12px auto 0;padding:0 20px}}
+.filter-row{{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}}
+.filter-label{{font-size:.8rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-right:4px;min-width:40px}}
+.filter-btn{{padding:6px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.82rem;font-weight:600;color:var(--fc,var(--text));cursor:pointer;transition:all .2s}}
+.filter-btn:hover{{background:var(--bg3);border-color:var(--fc,#555)}}
+.filter-btn.active{{background:var(--bg3);border-color:var(--fc,var(--gold));box-shadow:0 0 6px rgba(255,255,255,.1)}}
+
 /* Search */
 .sb{{max-width:1100px;margin:20px auto;padding:0 20px}}
 .sb input{{width:100%;padding:12px 16px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;color:var(--text);font-size:1rem;outline:none}}
@@ -772,7 +838,17 @@ footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bo
   <div class="ac"><h3>Installation</h3><p>Drop the <code>ClassicClassesEnhanced</code> folder into your <code>Interface/AddOns</code> directory. Works with Classic Era (Interface 11507).</p></div>
 </div></div>
 <nav class="sphere-bar">{sphere_bar}</nav>
-<div class="sb"><input type="text" id="si" placeholder="Search by name, class, or keyword..." oninput="searchCards()"></div>
+<div class="filter-wrap">
+  <div class="filter-row" id="race-row">
+    <span class="filter-label">Race</span>
+    {race_btns_html}
+  </div>
+  <div class="filter-row" id="class-row" style="display:none">
+    <span class="filter-label">Class</span>
+    {class_btns_html}
+  </div>
+</div>
+<div class="sb"><input type="text" id="si" placeholder="Search by name, class, or keyword..." oninput="applyFilters()"></div>
 <div class="grid-wrap"><div class="grid" id="card-grid">
 {chr(10).join(grid_cards)}
 </div></div>
@@ -784,7 +860,10 @@ footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bo
   <p><a href="https://buymeacoffee.com/berentbaris">Buy Me a Coffee</a></p>
 </footer>
 <script>
+const RACE_CLASSES = {race_classes_json};
 let activeSphere = 'all';
+let activeRace = null;
+let activeClass = null;
 let activeCard = null;
 
 function filterSphere(sphere) {{
@@ -792,20 +871,60 @@ function filterSphere(sphere) {{
   document.querySelectorAll('.sphere-btn').forEach(b => {{
     b.classList.toggle('active', b.dataset.sphere === sphere);
   }});
-  document.querySelectorAll('.grid-card').forEach(c => {{
-    c.style.display = (sphere === 'all' || c.dataset.sphere === sphere) ? '' : 'none';
-  }});
-  // Close any open detail
   closeDetail();
-  searchCards();
+  applyFilters();
 }}
 
-function searchCards() {{
+function selectRace(race) {{
+  if (activeRace === race) {{
+    // Deselect
+    activeRace = null;
+    activeClass = null;
+    document.querySelectorAll('.race-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('class-row').style.display = 'none';
+  }} else {{
+    activeRace = race;
+    activeClass = null;
+    document.querySelectorAll('.race-btn').forEach(b => {{
+      b.classList.toggle('active', b.dataset.race === race);
+    }});
+    // Show only valid classes for this race
+    const validClasses = RACE_CLASSES[race] || [];
+    const classRow = document.getElementById('class-row');
+    classRow.style.display = '';
+    document.querySelectorAll('.class-btn').forEach(b => {{
+      b.classList.remove('active');
+      b.style.display = validClasses.includes(b.dataset.class) ? '' : 'none';
+    }});
+  }}
+  closeDetail();
+  applyFilters();
+}}
+
+function selectClass(cls) {{
+  if (activeClass === cls) {{
+    activeClass = null;
+    document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+  }} else {{
+    activeClass = cls;
+    document.querySelectorAll('.class-btn').forEach(b => {{
+      b.classList.toggle('active', b.dataset.class === cls);
+    }});
+  }}
+  closeDetail();
+  applyFilters();
+}}
+
+function applyFilters() {{
   const q = document.getElementById('si').value.toLowerCase();
   document.querySelectorAll('.grid-card').forEach(c => {{
-    const sphereMatch = activeSphere === 'all' || c.dataset.sphere === activeSphere;
-    const textMatch = !q || c.dataset.name.includes(q) || c.dataset.classes.includes(q);
-    c.style.display = (sphereMatch && textMatch) ? '' : 'none';
+    const sphereOK = activeSphere === 'all' || c.dataset.sphere === activeSphere;
+    const textOK = !q || c.dataset.name.includes(q) || c.dataset.classes.includes(q);
+    const races = c.dataset.races ? c.dataset.races.split(',') : [];
+    const classes = c.dataset.baseclasses ? c.dataset.baseclasses.split(',') : [];
+    const raceOK = !activeRace || races.includes(activeRace);
+    const classOK = !activeClass || classes.includes(activeClass);
+    c.style.display = (sphereOK && textOK && raceOK && classOK) ? '' : 'none';
   }});
 }}
 
@@ -819,18 +938,10 @@ function toggleCard(card) {{
   const slug = card.id;
   const panel = document.getElementById('detail-' + slug);
   if (!panel) return;
-
-  if (activeCard === card) {{
-    closeDetail();
-    return;
-  }}
-
+  if (activeCard === card) {{ closeDetail(); return; }}
   closeDetail();
   activeCard = card;
   card.classList.add('active');
-
-  // Move detail panel right after the grid
-  const container = document.getElementById('detail-container');
   panel.classList.add('visible');
   panel.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
 }}
@@ -845,7 +956,6 @@ function switchBuildTab(btn, slug, idx) {{
   }});
 }}
 
-// Deep link support
 if (window.location.hash) {{
   const el = document.querySelector(window.location.hash);
   if (el && el.classList.contains('grid-card')) {{
