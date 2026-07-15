@@ -1,55 +1,33 @@
-"""Detect real format of .tga files (they're actually JPEG/PNG) and copy with correct extension."""
+"""Copy circular icon PNGs from the addon's Icons/ folder to the wiki's icons/ folder."""
 import os, shutil
 
-SRC = r"C:\wow_addon\ClassicClassesEnhanced\Backgrounds"
-DST = r"C:\cce-wiki\portraits"
+ICONS_SRC = r"C:\wow_addon\ClassicClassesEnhanced\Icons"
+ICONS_DST = r"C:\cce-wiki\icons"
 LOG = r"C:\cce-wiki\convert_log.txt"
 
-os.makedirs(DST, exist_ok=True)
+os.makedirs(ICONS_DST, exist_ok=True)
 log_lines = []
 def log(msg):
     print(msg)
     log_lines.append(msg)
 
-converted = 0
-errors = 0
-
-for f in sorted(os.listdir(SRC)):
-    if not f.lower().endswith(".tga"):
+copied = 0
+for f in sorted(os.listdir(ICONS_SRC)):
+    if not f.lower().endswith(".png"):
         continue
-    src_path = os.path.join(SRC, f)
+    # Skip per-build icons (e.g. Exemplar_PALADIN.png) — only copy base name icons
     base = f[:-4]
-    try:
-        with open(src_path, "rb") as fh:
-            header = fh.read(8)
-
-        # Detect real format
-        if header[:3] == b'\xff\xd8\xff':
-            ext = ".jpg"
-            fmt = "JPEG"
-        elif header[:4] == b'\x89PNG':
-            ext = ".png"
-            fmt = "PNG"
-        elif header[2:3] in (b'\x02', b'\x0a'):
-            ext = ".png"  # real TGA — would need conversion, skip for now
-            fmt = "TGA"
-            log(f"  SKIP: {f} is actual TGA (would need Pillow)")
+    if "_" in base:
+        parts = base.rsplit("_", 1)
+        if parts[1] in ("WARRIOR", "ROGUE", "WARLOCK", "DRUID", "HUNTER", "SHAMAN", "PALADIN", "PRIEST", "MAGE"):
             continue
-        else:
-            log(f"  SKIP: {f} unknown format: {header[:8].hex()}")
-            continue
+    src_path = os.path.join(ICONS_SRC, f)
+    dst_path = os.path.join(ICONS_DST, f)
+    shutil.copy2(src_path, dst_path)
+    log(f"  OK: {f}")
+    copied += 1
 
-        # Copy with correct web extension — for the wiki we'll use .png for everything
-        # JPEGs stay as .jpg, PNGs stay as .png
-        dst_path = os.path.join(DST, base + ext)
-        shutil.copy2(src_path, dst_path)
-        log(f"  OK: {f} -> {base}{ext} ({fmt})")
-        converted += 1
-    except Exception as e:
-        log(f"  FAIL: {f} -> {e}")
-        errors += 1
-
-log(f"\nDone! {converted} copied, {errors} errors.")
+log(f"\nDone! {copied} icons copied.")
 
 with open(LOG, "w") as lf:
     lf.write("\n".join(log_lines))

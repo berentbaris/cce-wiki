@@ -22,15 +22,9 @@ a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}
 .ac{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:20px}
 .ac h3{color:var(--gold);font-size:1rem;margin-bottom:8px}.ac p{font-size:.9rem;color:var(--dim)}
 
-/* Sphere filter */
-.sphere-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:20px;max-width:1100px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:100;border-bottom:1px solid var(--brd)}
-.sphere-btn{padding:8px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.85rem;font-weight:600;color:var(--sc);cursor:pointer;transition:all .2s}
-.sphere-btn:hover,.sphere-btn.active{background:var(--bg3);border-color:var(--sc)}
-.sphere-count{font-size:.75rem;opacity:.6;margin-left:2px}
-
 /* Race / Class filters */
-.filter-wrap{max-width:1100px;margin:12px auto 0;padding:0 20px}
-.filter-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}
+.filter-wrap{max-width:1100px;margin:20px auto 0;padding:0 20px}
+.filter-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;margin-bottom:8px}
 .filter-label{font-size:.8rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-right:4px;min-width:40px}
 .filter-btn{padding:6px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.82rem;font-weight:600;color:var(--fc,var(--text));cursor:pointer;transition:all .2s}
 .filter-btn:hover{background:var(--bg3);border-color:var(--fc,#555)}
@@ -109,14 +103,6 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
   <div class="ac"><h3>Auto-Detection</h3><p>Your enhanced class is determined by race, gender, and class. The addon detects it on login. Use <code>/cce pick</code> to choose manually.</p></div>
   <div class="ac"><h3>Installation</h3><p>Drop the <code>ClassicClassesEnhanced</code> folder into your <code>Interface/AddOns</code> directory. Works with Classic Era (Interface 11507).</p></div>
 </div></div>
-<nav class="sphere-bar"><button class="sphere-btn active" data-sphere="all" style="--sc:var(--gold)" onclick="filterSphere('all')">All <span class="sphere-count">45</span></button>
-<button class="sphere-btn" data-sphere="light" style="--sc:#fff2b0" onclick="filterSphere('light')">Light <span class="sphere-count">5</span></button>
-<button class="sphere-btn" data-sphere="life" style="--sc:#7ec850" onclick="filterSphere('life')">Life <span class="sphere-count">8</span></button>
-<button class="sphere-btn" data-sphere="chaos" style="--sc:#50e650" onclick="filterSphere('chaos')">Chaos <span class="sphere-count">5</span></button>
-<button class="sphere-btn" data-sphere="reality" style="--sc:#c8a862" onclick="filterSphere('reality')">Reality <span class="sphere-count">11</span></button>
-<button class="sphere-btn" data-sphere="order" style="--sc:#5cc0e8" onclick="filterSphere('order')">Order <span class="sphere-count">7</span></button>
-<button class="sphere-btn" data-sphere="death" style="--sc:#b060d8" onclick="filterSphere('death')">Death <span class="sphere-count">3</span></button>
-<button class="sphere-btn" data-sphere="shadow" style="--sc:#7848b0" onclick="filterSphere('shadow')">Shadow <span class="sphere-count">6</span></button></nav>
 <div class="filter-wrap">
   <div class="filter-row" id="race-row">
     <span class="filter-label">Race</span>
@@ -146,7 +132,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 <div class="grid-wrap"><div class="grid" id="card-grid">
 <div class="grid-card" data-sphere="light" data-name="exemplar" data-classes="warrior / paladin" data-races="human,undead" data-baseclasses="paladin,warrior" id="exemplar" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Exemplar.jpg" alt="Exemplar" class="grid-img" loading="lazy">
+    <img src="icons/Exemplar.png" alt="Exemplar" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#fff2b0">EX</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -155,7 +141,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="light" data-name="moon priest" data-classes="hunter / priest" data-races="night elf" data-baseclasses="hunter,priest" id="moon-priest" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Moon.jpg" alt="Moon Priest" class="grid-img" loading="lazy">
+    <img src="icons/Moon.png" alt="Moon Priest" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#fff2b0">MP</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -164,7 +150,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="light" data-name="scarlet champion" data-classes="paladin / priest" data-races="human" data-baseclasses="paladin,priest" id="scarlet-champion" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/scarlet_champ.jpg" alt="Scarlet Champion" class="grid-img" loading="lazy">
+    <img src="icons/scarlet_champ.png" alt="Scarlet Champion" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#fff2b0">SC</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -173,8 +159,8 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="light" data-name="shieldbearer" data-classes="paladin" data-races="dwarf" data-baseclasses="paladin" id="shieldbearer" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    
-    <div class="grid-fb" style="background:#fff2b022;border-color:#fff2b0"><span style="color:#fff2b0">SH</span></div>
+    <img src="icons/shieldbearer.png" alt="Shieldbearer" class="grid-img" loading="lazy">
+    <div class="grid-fb" style="display:none"><span style="color:#fff2b0">SH</span></div>
     
   </div>
   <div class="grid-name" style="color:#fff2b0">Shieldbearer</div>
@@ -182,7 +168,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="light" data-name="templar" data-classes="paladin / priest" data-races="dwarf,human" data-baseclasses="paladin,priest" id="templar" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Templar.png" alt="Templar" class="grid-img" loading="lazy">
+    <img src="icons/Templar.png" alt="Templar" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#fff2b0">TE</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -191,7 +177,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="dragonsworn" data-classes="warrior / druid" data-races="night elf" data-baseclasses="druid,warrior" id="dragonsworn" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/dragonsworn.jpg" alt="Dragonsworn" class="grid-img" loading="lazy">
+    <img src="icons/dragonsworn.png" alt="Dragonsworn" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">DR</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -200,7 +186,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="druid of the claw" data-classes="druid" data-races="night elf" data-baseclasses="druid" id="druid-of-the-claw" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Claw.jpg" alt="Druid of the Claw" class="grid-img" loading="lazy">
+    <img src="icons/Claw.png" alt="Druid of the Claw" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">DO</span></div>
     
   </div>
@@ -209,7 +195,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="druid of the wild" data-classes="druid" data-races="night elf,tauren" data-baseclasses="druid" id="druid-of-the-wild" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/savage.jpg" alt="Druid of the Wild" class="grid-img" loading="lazy">
+    <img src="icons/savage.png" alt="Druid of the Wild" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">DO</span></div>
     
   </div>
@@ -218,7 +204,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="earthcaller" data-classes="shaman" data-races="orc,tauren,troll" data-baseclasses="shaman" id="earthcaller" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Earthcaller.jpg" alt="Earthcaller" class="grid-img" loading="lazy">
+    <img src="icons/Earthcaller.png" alt="Earthcaller" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">EA</span></div>
     
   </div>
@@ -227,7 +213,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="elven archer" data-classes="hunter / rogue" data-races="night elf" data-baseclasses="hunter,rogue" id="elven-archer" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/ElvenRanger.jpg" alt="Elven Archer" class="grid-img" loading="lazy">
+    <img src="icons/ElvenRanger.png" alt="Elven Archer" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">EA</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -236,7 +222,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="plagueshifter" data-classes="shaman / druid" data-races="tauren,troll" data-baseclasses="druid,shaman" id="plagueshifter" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Plagueshifter.jpg" alt="Plagueshifter" class="grid-img" loading="lazy">
+    <img src="icons/Plagueshifter.png" alt="Plagueshifter" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">PL</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -245,7 +231,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="savagekin" data-classes="druid" data-races="night elf,tauren" data-baseclasses="druid" id="savagekin" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Savagekin.jpg" alt="Savagekin" class="grid-img" loading="lazy">
+    <img src="icons/Savagekin.png" alt="Savagekin" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">SA</span></div>
     
   </div>
@@ -254,7 +240,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="life" data-name="warden" data-classes="warrior / rogue" data-races="night elf" data-baseclasses="rogue,warrior" id="warden" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/warden.jpg" alt="Warden" class="grid-img" loading="lazy">
+    <img src="icons/warden.png" alt="Warden" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7ec850">WA</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -263,7 +249,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="chaos" data-name="blademaster" data-classes="warrior / shaman" data-races="orc" data-baseclasses="shaman,warrior" id="blademaster" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/blademaster.jpg" alt="Blademaster" class="grid-img" loading="lazy">
+    <img src="icons/blademaster.png" alt="Blademaster" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#50e650">BL</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -272,7 +258,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="chaos" data-name="bloodmage" data-classes="mage / warlock" data-races="undead" data-baseclasses="mage,warlock" id="bloodmage" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Bloodmage.jpg" alt="Bloodmage" class="grid-img" loading="lazy">
+    <img src="icons/Bloodmage.png" alt="Bloodmage" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#50e650">BL</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -281,7 +267,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="chaos" data-name="demon hunter" data-classes="warrior / rogue" data-races="night elf" data-baseclasses="rogue,warrior" id="demon-hunter" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/DH.jpg" alt="Demon Hunter" class="grid-img" loading="lazy">
+    <img src="icons/DH.png" alt="Demon Hunter" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#50e650">DH</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -290,7 +276,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="chaos" data-name="hedge wizard" data-classes="mage" data-races="troll" data-baseclasses="mage" id="hedge-wizard" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Hedgewizard.jpg" alt="Hedge Wizard" class="grid-img" loading="lazy">
+    <img src="icons/Hedgewizard.png" alt="Hedge Wizard" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#50e650">HW</span></div>
     
   </div>
@@ -299,7 +285,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="chaos" data-name="pyremaster" data-classes="shaman / warlock" data-races="orc" data-baseclasses="shaman,warlock" id="pyremaster" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Pyremaster.jpg" alt="Pyremaster" class="grid-img" loading="lazy">
+    <img src="icons/Pyremaster.png" alt="Pyremaster" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#50e650">PY</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -308,7 +294,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="barbarian" data-classes="warrior / rogue" data-races="human,orc,troll" data-baseclasses="rogue,warrior" id="barbarian" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/barbarian.jpg" alt="Barbarian" class="grid-img" loading="lazy">
+    <img src="icons/barbarian.png" alt="Barbarian" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">BA</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -317,7 +303,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="beastmaster" data-classes="hunter" data-races="night elf,orc,tauren,troll" data-baseclasses="hunter" id="beastmaster" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Orcbeastmaster.jpg" alt="Beastmaster" class="grid-img" loading="lazy">
+    <img src="icons/Orcbeastmaster.png" alt="Beastmaster" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">BE</span></div>
     
   </div>
@@ -326,7 +312,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="berserker" data-classes="warrior / rogue" data-races="orc,troll" data-baseclasses="rogue,warrior" id="berserker" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/berserker.jpg" alt="Berserker" class="grid-img" loading="lazy">
+    <img src="icons/berserker.png" alt="Berserker" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">BE</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -335,7 +321,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="brave" data-classes="warrior / hunter" data-races="tauren" data-baseclasses="hunter,warrior" id="brave" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/brave.jpg" alt="Brave" class="grid-img" loading="lazy">
+    <img src="icons/brave.png" alt="Brave" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">BR</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -344,7 +330,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="brewmaster" data-classes="warrior" data-races="gnome,human,orc,tauren,troll" data-baseclasses="warrior" id="brewmaster" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/brewmaster.jpg" alt="Brewmaster" class="grid-img" loading="lazy">
+    <img src="icons/brewmaster.png" alt="Brewmaster" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">BR</span></div>
     
   </div>
@@ -353,7 +339,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="buccaneer" data-classes="hunter / rogue" data-races="dwarf,human,orc,tauren,undead" data-baseclasses="hunter,rogue" id="buccaneer" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Buccaneer.jpg" alt="Buccaneer" class="grid-img" loading="lazy">
+    <img src="icons/Buccaneer.png" alt="Buccaneer" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">BU</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -362,7 +348,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="mountain king" data-classes="warrior / rogue" data-races="dwarf" data-baseclasses="rogue,warrior" id="mountain-king" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Mountain_king.jpg" alt="Mountain King" class="grid-img" loading="lazy">
+    <img src="icons/mking.png" alt="Mountain King" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">MK</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -371,7 +357,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="mountaineer" data-classes="hunter" data-races="dwarf" data-baseclasses="hunter" id="mountaineer" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Mountaineer.jpg" alt="Mountaineer" class="grid-img" loading="lazy">
+    <img src="icons/Mountaineer.png" alt="Mountaineer" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">MO</span></div>
     
   </div>
@@ -380,7 +366,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="prospector" data-classes="warrior / hunter / rogue" data-races="dwarf" data-baseclasses="hunter,rogue,warrior" id="prospector" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/pros.jpg" alt="Prospector" class="grid-img" loading="lazy">
+    <img src="icons/pros.png" alt="Prospector" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">PR</span></div>
     <span class="build-badge">3</span>
   </div>
@@ -389,7 +375,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="ranger" data-classes="rogue" data-races="gnome,human,undead" data-baseclasses="rogue" id="ranger" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/dark_ranger.jpg" alt="Ranger" class="grid-img" loading="lazy">
+    <img src="icons/dark_ranger.png" alt="Ranger" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">RA</span></div>
     
   </div>
@@ -398,7 +384,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="reality" data-name="wilderness stalker" data-classes="hunter" data-races="troll" data-baseclasses="hunter" id="wilderness-stalker" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Wildernessstalker.jpg" alt="Wilderness Stalker" class="grid-img" loading="lazy">
+    <img src="icons/Wildernessstalker.png" alt="Wilderness Stalker" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#c8a862">WS</span></div>
     
   </div>
@@ -407,7 +393,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="order" data-name="kirin tor mage" data-classes="mage" data-races="gnome,human" data-baseclasses="mage" id="kirin-tor-mage" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/kirin_tor.jpg" alt="Kirin Tor Mage" class="grid-img" loading="lazy">
+    <img src="icons/kirin_tor.png" alt="Kirin Tor Mage" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#5cc0e8">KT</span></div>
     
   </div>
@@ -416,7 +402,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="order" data-name="ley walker" data-classes="mage" data-races="human" data-baseclasses="mage" id="ley-walker" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/ley.jpg" alt="Ley Walker" class="grid-img" loading="lazy">
+    <img src="icons/ley.png" alt="Ley Walker" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#5cc0e8">LW</span></div>
     
   </div>
@@ -425,7 +411,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="order" data-name="runemaster" data-classes="warrior" data-races="dwarf,tauren" data-baseclasses="warrior" id="runemaster" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Runemaster.jpg" alt="Runemaster" class="grid-img" loading="lazy">
+    <img src="icons/Runemaster.png" alt="Runemaster" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#5cc0e8">RU</span></div>
     
   </div>
@@ -434,7 +420,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="order" data-name="sister of steel" data-classes="warrior / paladin" data-races="dwarf" data-baseclasses="paladin,warrior" id="sister-of-steel" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Sistersteel.jpg" alt="Sister of Steel" class="grid-img" loading="lazy">
+    <img src="icons/Sistersteel.png" alt="Sister of Steel" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#5cc0e8">SO</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -443,7 +429,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="order" data-name="spellblade" data-classes="mage" data-races="troll,undead" data-baseclasses="mage" id="spellblade" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Spellblade.jpg" alt="Spellblade" class="grid-img" loading="lazy">
+    <img src="icons/Spellblade.png" alt="Spellblade" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#5cc0e8">SP</span></div>
     
   </div>
@@ -452,7 +438,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="order" data-name="techno-mage" data-classes="mage" data-races="gnome" data-baseclasses="mage" id="techno-mage" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Techno-mage.jpg" alt="Techno-mage" class="grid-img" loading="lazy">
+    <img src="icons/Techno-mage.png" alt="Techno-mage" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#5cc0e8">TE</span></div>
     
   </div>
@@ -461,7 +447,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="order" data-name="tinker" data-classes="warrior / rogue" data-races="gnome" data-baseclasses="rogue,warrior" id="tinker" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/tinker.jpg" alt="Tinker" class="grid-img" loading="lazy">
+    <img src="icons/tinker.png" alt="Tinker" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#5cc0e8">TI</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -470,7 +456,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="death" data-name="apothecary" data-classes="rogue / priest" data-races="undead" data-baseclasses="priest,rogue" id="apothecary" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Apothecary.jpg" alt="Apothecary" class="grid-img" loading="lazy">
+    <img src="icons/Apothecary.png" alt="Apothecary" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#b060d8">AP</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -479,7 +465,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="death" data-name="necromancer" data-classes="warlock" data-races="gnome,human,orc" data-baseclasses="warlock" id="necromancer" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Necromancer.jpg" alt="Necromancer" class="grid-img" loading="lazy">
+    <img src="icons/Necromancer.png" alt="Necromancer" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#b060d8">NE</span></div>
     
   </div>
@@ -488,7 +474,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="death" data-name="spiritwalker" data-classes="shaman" data-races="tauren" data-baseclasses="shaman" id="spiritwalker" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/spirit_walk.jpg" alt="Spiritwalker" class="grid-img" loading="lazy">
+    <img src="icons/spirit_walk.png" alt="Spiritwalker" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#b060d8">SP</span></div>
     
   </div>
@@ -497,7 +483,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="shadow" data-name="death knight" data-classes="warrior / warlock" data-races="undead" data-baseclasses="warlock,warrior" id="death-knight" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Death_Knight.jpg" alt="Death Knight" class="grid-img" loading="lazy">
+    <img src="icons/Death_Knight.png" alt="Death Knight" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7848b0">DK</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -506,8 +492,8 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="shadow" data-name="hexxer" data-classes="priest" data-races="troll" data-baseclasses="priest" id="hexxer" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    
-    <div class="grid-fb" style="background:#7848b022;border-color:#7848b0"><span style="color:#7848b0">HE</span></div>
+    <img src="icons/hexxer.png" alt="Hexxer" class="grid-img" loading="lazy">
+    <div class="grid-fb" style="display:none"><span style="color:#7848b0">HE</span></div>
     
   </div>
   <div class="grid-name" style="color:#7848b0">Hexxer</div>
@@ -515,7 +501,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="shadow" data-name="lightslayer" data-classes="priest" data-races="undead" data-baseclasses="priest" id="lightslayer" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/Lightslayer.jpg" alt="Lightslayer" class="grid-img" loading="lazy">
+    <img src="icons/Lightslayer.png" alt="Lightslayer" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7848b0">LI</span></div>
     
   </div>
@@ -524,7 +510,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="shadow" data-name="shadow hunter" data-classes="hunter / rogue" data-races="troll" data-baseclasses="hunter,rogue" id="shadow-hunter" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/shadow_hunter.jpg" alt="Shadow Hunter" class="grid-img" loading="lazy">
+    <img src="icons/shadow_hunter.png" alt="Shadow Hunter" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7848b0">SH</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -533,8 +519,8 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="shadow" data-name="twilight cultist" data-classes="priest / warlock" data-races="dwarf,gnome,human,night elf" data-baseclasses="priest,warlock" id="twilight-cultist" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    
-    <div class="grid-fb" style="background:#7848b022;border-color:#7848b0"><span style="color:#7848b0">TC</span></div>
+    <img src="icons/cultist.png" alt="Twilight Cultist" class="grid-img" loading="lazy">
+    <div class="grid-fb" style="display:none"><span style="color:#7848b0">TC</span></div>
     <span class="build-badge">2</span>
   </div>
   <div class="grid-name" style="color:#7848b0">Twilight Cultist</div>
@@ -542,7 +528,7 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </div>
 <div class="grid-card" data-sphere="shadow" data-name="witch doctor" data-classes="priest / shaman" data-races="troll" data-baseclasses="priest,shaman" id="witch-doctor" onclick="toggleCard(this)">
   <div class="grid-portrait">
-    <img src="portraits/witch_doctor.jpg" alt="Witch Doctor" class="grid-img" loading="lazy">
+    <img src="icons/witch_doctor.png" alt="Witch Doctor" class="grid-img" loading="lazy">
     <div class="grid-fb" style="display:none"><span style="color:#7848b0">WD</span></div>
     <span class="build-badge">2</span>
   </div>
@@ -898,19 +884,9 @@ footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bor
 </footer>
 <script>
 const RACE_CLASSES = {"human": ["warrior", "paladin", "rogue", "priest", "mage", "warlock"], "dwarf": ["warrior", "paladin", "hunter", "rogue", "priest"], "night elf": ["warrior", "hunter", "rogue", "priest", "druid"], "gnome": ["warrior", "rogue", "mage", "warlock"], "orc": ["warrior", "hunter", "rogue", "shaman", "warlock"], "troll": ["warrior", "hunter", "rogue", "priest", "shaman", "mage"], "tauren": ["warrior", "hunter", "shaman", "druid"], "undead": ["warrior", "rogue", "priest", "mage", "warlock"]};
-let activeSphere = 'all';
 let activeRace = null;
 let activeClass = null;
 let activeCard = null;
-
-function filterSphere(sphere) {
-  activeSphere = sphere;
-  document.querySelectorAll('.sphere-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.sphere === sphere);
-  });
-  closeDetail();
-  applyFilters();
-}
 
 function selectRace(race) {
   if (activeRace === race) {
@@ -955,13 +931,12 @@ function selectClass(cls) {
 function applyFilters() {
   const q = document.getElementById('si').value.toLowerCase();
   document.querySelectorAll('.grid-card').forEach(c => {
-    const sphereOK = activeSphere === 'all' || c.dataset.sphere === activeSphere;
     const textOK = !q || c.dataset.name.includes(q) || c.dataset.classes.includes(q);
     const races = c.dataset.races ? c.dataset.races.split(',') : [];
     const classes = c.dataset.baseclasses ? c.dataset.baseclasses.split(',') : [];
     const raceOK = !activeRace || races.includes(activeRace);
     const classOK = !activeClass || classes.includes(activeClass);
-    c.style.display = (sphereOK && textOK && raceOK && classOK) ? '' : 'none';
+    c.style.display = (textOK && raceOK && classOK) ? '' : 'none';
   });
 }
 

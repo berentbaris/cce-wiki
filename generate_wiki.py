@@ -83,51 +83,54 @@ CLASS_SPHERE = {
     "Demon Hunter":       "chaos",
 }
 
-# ── Portrait filename mapping (display name → file in portraits/) ──
+# ── Portrait filename mapping (display name → PNG in icons/) ──
 PORTRAIT_MAP = {
-    "Mountain King":      "Mountain_king.jpg",
-    "Sister of Steel":    "Sistersteel.jpg",
-    "Brewmaster":         "brewmaster.jpg",
-    "Runemaster":         "Runemaster.jpg",
-    "Berserker":          "berserker.jpg",
-    "Blademaster":        "blademaster.jpg",
-    "Brave":              "brave.jpg",
-    "Tinker":             "tinker.jpg",
-    "Prospector":         "pros.jpg",
-    "Buccaneer":          "Buccaneer.jpg",
-    "Warden":             "warden.jpg",
-    "Demon Hunter":       "DH.jpg",
-    "Ranger":             "dark_ranger.jpg",
-    "Barbarian":          "barbarian.jpg",
-    "Pyremaster":         "Pyremaster.jpg",
-    "Death Knight":       "Death_Knight.jpg",
-    "Necromancer":        "Necromancer.jpg",
-    "Druid of the Claw":  "Claw.jpg",
-    "Druid of the Wild":  "savage.jpg",
-    "Dragonsworn":        "dragonsworn.jpg",
-    "Plagueshifter":      "Plagueshifter.jpg",
-    "Savagekin":          "Savagekin.jpg",
-    "Beastmaster":        "Orcbeastmaster.jpg",
-    "Mountaineer":        "Mountaineer.jpg",
-    "Elven Archer":       "ElvenRanger.jpg",
-    "Wilderness Stalker": "Wildernessstalker.jpg",
-    "Earthcaller":        "Earthcaller.jpg",
-    "Witch Doctor":       "witch_doctor.jpg",
-    "Spiritwalker":       "spirit_walk.jpg",
-    "Spirit Champion":    "spirit_champ.jpg",
-    "Scarlet Champion":   "scarlet_champ.jpg",
-    "Exemplar":           "Exemplar.jpg",
+    "Mountain King":      "mking.png",
+    "Sister of Steel":    "Sistersteel.png",
+    "Brewmaster":         "brewmaster.png",
+    "Runemaster":         "Runemaster.png",
+    "Berserker":          "berserker.png",
+    "Blademaster":        "blademaster.png",
+    "Brave":              "brave.png",
+    "Tinker":             "tinker.png",
+    "Prospector":         "pros.png",
+    "Buccaneer":          "Buccaneer.png",
+    "Warden":             "warden.png",
+    "Demon Hunter":       "DH.png",
+    "Ranger":             "dark_ranger.png",
+    "Barbarian":          "barbarian.png",
+    "Pyremaster":         "Pyremaster.png",
+    "Death Knight":       "Death_Knight.png",
+    "Necromancer":        "Necromancer.png",
+    "Druid of the Claw":  "Claw.png",
+    "Druid of the Wild":  "savage.png",
+    "Dragonsworn":        "dragonsworn.png",
+    "Plagueshifter":      "Plagueshifter.png",
+    "Savagekin":          "Savagekin.png",
+    "Beastmaster":        "Orcbeastmaster.png",
+    "Mountaineer":        "Mountaineer.png",
+    "Elven Archer":       "ElvenRanger.png",
+    "Wilderness Stalker": "Wildernessstalker.png",
+    "Earthcaller":        "Earthcaller.png",
+    "Witch Doctor":       "witch_doctor.png",
+    "Spiritwalker":       "spirit_walk.png",
+    "Spirit Champion":    "spirit_champ.png",
+    "Scarlet Champion":   "scarlet_champ.png",
+    "Exemplar":           "Exemplar.png",
     "Templar":            "Templar.png",
-    "Moon Priest":        "Moon.jpg",
-    "Apothecary":         "Apothecary.jpg",
-    "Shadow Hunter":      "shadow_hunter.jpg",
-    "Lightslayer":        "Lightslayer.jpg",
-    "Bloodmage":          "Bloodmage.jpg",
-    "Techno-mage":        "Techno-mage.jpg",
-    "Spellblade":         "Spellblade.jpg",
-    "Hedge Wizard":       "Hedgewizard.jpg",
-    "Kirin Tor Mage":     "kirin_tor.jpg",
-    "Ley Walker":         "ley.jpg",
+    "Moon Priest":        "Moon.png",
+    "Apothecary":         "Apothecary.png",
+    "Shadow Hunter":      "shadow_hunter.png",
+    "Lightslayer":        "Lightslayer.png",
+    "Bloodmage":          "Bloodmage.png",
+    "Techno-mage":        "Techno-mage.png",
+    "Spellblade":         "Spellblade.png",
+    "Hedge Wizard":       "Hedgewizard.png",
+    "Kirin Tor Mage":     "kirin_tor.png",
+    "Ley Walker":         "ley.png",
+    "Hexxer":             "hexxer.png",
+    "Shieldbearer":       "shieldbearer.png",
+    "Twilight Cultist":   "cultist.png",
 }
 
 RACE_ORDER = ["Human", "Dwarf", "Night Elf", "Gnome", "Orc", "Troll", "Tauren", "Undead"]
@@ -612,15 +615,6 @@ def generate_html(characters, lore, talents, challenge_descs):
     for sphere in sphere_groups:
         sphere_groups[sphere].sort()
 
-    # Sphere filter bar
-    sphere_btns = []
-    for s in SPHERE_ORDER:
-        color = SPHERE_COLORS[s]
-        label = SPHERE_NAMES[s]
-        count = len(sphere_groups.get(s, []))
-        sphere_btns.append(f'<button class="sphere-btn" data-sphere="{s}" style="--sc:{color}" onclick="filterSphere(\'{s}\')">{label} <span class="sphere-count">{count}</span></button>')
-    sphere_bar = f'<button class="sphere-btn active" data-sphere="all" style="--sc:var(--gold)" onclick="filterSphere(\'all\')">All <span class="sphere-count">{total_names}</span></button>\n' + "\n".join(sphere_btns)
-
     # Race/class filter buttons
     import json
     race_btns = []
@@ -663,7 +657,7 @@ def generate_html(characters, lore, talents, challenge_descs):
             classes_data = ",".join(sorted(all_classes)).lower()
 
             if portrait:
-                img_html = f'<img src="portraits/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
+                img_html = f'<img src="icons/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
                 fb_style = 'display:none'
             else:
                 img_html = ''
@@ -750,15 +744,9 @@ a{{color:var(--gold);text-decoration:none}}a:hover{{text-decoration:underline}}
 .ac{{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:20px}}
 .ac h3{{color:var(--gold);font-size:1rem;margin-bottom:8px}}.ac p{{font-size:.9rem;color:var(--dim)}}
 
-/* Sphere filter */
-.sphere-bar{{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:20px;max-width:1100px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:100;border-bottom:1px solid var(--brd)}}
-.sphere-btn{{padding:8px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.85rem;font-weight:600;color:var(--sc);cursor:pointer;transition:all .2s}}
-.sphere-btn:hover,.sphere-btn.active{{background:var(--bg3);border-color:var(--sc)}}
-.sphere-count{{font-size:.75rem;opacity:.6;margin-left:2px}}
-
 /* Race / Class filters */
-.filter-wrap{{max-width:1100px;margin:12px auto 0;padding:0 20px}}
-.filter-row{{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}}
+.filter-wrap{{max-width:1100px;margin:20px auto 0;padding:0 20px}}
+.filter-row{{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;margin-bottom:8px}}
 .filter-label{{font-size:.8rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-right:4px;min-width:40px}}
 .filter-btn{{padding:6px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.82rem;font-weight:600;color:var(--fc,var(--text));cursor:pointer;transition:all .2s}}
 .filter-btn:hover{{background:var(--bg3);border-color:var(--fc,#555)}}
@@ -837,7 +825,6 @@ footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bo
   <div class="ac"><h3>Auto-Detection</h3><p>Your enhanced class is determined by race, gender, and class. The addon detects it on login. Use <code>/cce pick</code> to choose manually.</p></div>
   <div class="ac"><h3>Installation</h3><p>Drop the <code>ClassicClassesEnhanced</code> folder into your <code>Interface/AddOns</code> directory. Works with Classic Era (Interface 11507).</p></div>
 </div></div>
-<nav class="sphere-bar">{sphere_bar}</nav>
 <div class="filter-wrap">
   <div class="filter-row" id="race-row">
     <span class="filter-label">Race</span>
@@ -861,19 +848,9 @@ footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bo
 </footer>
 <script>
 const RACE_CLASSES = {race_classes_json};
-let activeSphere = 'all';
 let activeRace = null;
 let activeClass = null;
 let activeCard = null;
-
-function filterSphere(sphere) {{
-  activeSphere = sphere;
-  document.querySelectorAll('.sphere-btn').forEach(b => {{
-    b.classList.toggle('active', b.dataset.sphere === sphere);
-  }});
-  closeDetail();
-  applyFilters();
-}}
 
 function selectRace(race) {{
   if (activeRace === race) {{
@@ -918,13 +895,12 @@ function selectClass(cls) {{
 function applyFilters() {{
   const q = document.getElementById('si').value.toLowerCase();
   document.querySelectorAll('.grid-card').forEach(c => {{
-    const sphereOK = activeSphere === 'all' || c.dataset.sphere === activeSphere;
     const textOK = !q || c.dataset.name.includes(q) || c.dataset.classes.includes(q);
     const races = c.dataset.races ? c.dataset.races.split(',') : [];
     const classes = c.dataset.baseclasses ? c.dataset.baseclasses.split(',') : [];
     const raceOK = !activeRace || races.includes(activeRace);
     const classOK = !activeClass || classes.includes(activeClass);
-    c.style.display = (sphereOK && textOK && raceOK && classOK) ? '' : 'none';
+    c.style.display = (textOK && raceOK && classOK) ? '' : 'none';
   }});
 }}
 
