@@ -127,7 +127,7 @@ PORTRAIT_MAP = {
     "Spellblade":         "Spellblade.png",
     "Hedge Wizard":       "Hedgewizard.png",
     "Kirin Tor Mage":     "kirin_tor.png",
-    "Ley Walker":         "ley.png",
+    "Ley Walker":         "ley_walker.png",
     "Hexxer":             "hexxer.png",
     "Shieldbearer":       "shieldbearer.png",
     "Twilight Cultist":   "cultist.png",
@@ -627,11 +627,17 @@ def generate_html(characters, lore, talents, challenge_descs):
     class_btns = []
     for c in CLASS_DISPLAY_ORDER:
         cc = CLASS_COLORS[c]
-        class_btns.append(f'<button class="filter-btn class-btn" data-class="{c.lower()}" style="--fc:{cc};display:none" onclick="selectClass(\'{c.lower()}\')">{title_case(c)}</button>')
+        class_btns.append(f'<button class="filter-btn class-btn" data-class="{c.lower()}" style="--fc:{cc}" onclick="selectClass(\'{c.lower()}\')">{title_case(c)}</button>')
     class_btns_html = "\n    ".join(class_btns)
 
-    # Race→classes JSON for JS
+    # Race→classes and class→races JSON for JS (cross-greying)
     race_classes_json = json.dumps({r.lower(): [c.lower() for c in classes] for r, classes in RACE_CLASSES.items()})
+    # Build reverse: class → which races can play it
+    class_races = {}
+    for race, classes in RACE_CLASSES.items():
+        for cls in classes:
+            class_races.setdefault(cls.lower(), []).append(race.lower())
+    class_races_json = json.dumps(class_races)
 
     # Build grid cards
     grid_cards = []
@@ -751,6 +757,7 @@ a{{color:var(--gold);text-decoration:none}}a:hover{{text-decoration:underline}}
 .filter-btn{{padding:6px 14px;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;font-size:.82rem;font-weight:600;color:var(--fc,var(--text));cursor:pointer;transition:all .2s}}
 .filter-btn:hover{{background:var(--bg3);border-color:var(--fc,#555)}}
 .filter-btn.active{{background:var(--bg3);border-color:var(--fc,var(--gold));box-shadow:0 0 6px rgba(255,255,255,.1)}}
+.filter-btn.greyed{{opacity:.3;pointer-events:none}}
 
 /* Search */
 .sb{{max-width:1100px;margin:20px auto;padding:0 20px}}
@@ -830,7 +837,7 @@ footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bo
     <span class="filter-label">Race</span>
     {race_btns_html}
   </div>
-  <div class="filter-row" id="class-row" style="display:none">
+  <div class="filter-row" id="class-row">
     <span class="filter-label">Class</span>
     {class_btns_html}
   </div>
@@ -848,32 +855,53 @@ footer{{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem;bo
 </footer>
 <script>
 const RACE_CLASSES = {race_classes_json};
+const CLASS_RACES = {class_races_json};
 let activeRace = null;
 let activeClass = null;
 let activeCard = null;
 
+function refreshFilterStates() {{
+  // Grey out class buttons incompatible with selected race
+  document.querySelectorAll('.class-btn').forEach(b => {{
+    const cls = b.dataset.class;
+    let grey = false;
+    if (activeRace) {{
+      const valid = RACE_CLASSES[activeRace] || [];
+      if (!valid.includes(cls)) grey = true;
+    }}
+    if (grey && b.classList.contains('active')) {{
+      b.classList.remove('active');
+      activeClass = null;
+    }}
+    b.classList.toggle('greyed', grey);
+  }});
+  // Grey out race buttons incompatible with selected class
+  document.querySelectorAll('.race-btn').forEach(b => {{
+    const race = b.dataset.race;
+    let grey = false;
+    if (activeClass) {{
+      const valid = CLASS_RACES[activeClass] || [];
+      if (!valid.includes(race)) grey = true;
+    }}
+    if (grey && b.classList.contains('active')) {{
+      b.classList.remove('active');
+      activeRace = null;
+    }}
+    b.classList.toggle('greyed', grey);
+  }});
+}}
+
 function selectRace(race) {{
   if (activeRace === race) {{
-    // Deselect
     activeRace = null;
-    activeClass = null;
     document.querySelectorAll('.race-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('class-row').style.display = 'none';
   }} else {{
     activeRace = race;
-    activeClass = null;
     document.querySelectorAll('.race-btn').forEach(b => {{
       b.classList.toggle('active', b.dataset.race === race);
     }});
-    // Show only valid classes for this race
-    const validClasses = RACE_CLASSES[race] || [];
-    const classRow = document.getElementById('class-row');
-    classRow.style.display = '';
-    document.querySelectorAll('.class-btn').forEach(b => {{
-      b.classList.remove('active');
-      b.style.display = validClasses.includes(b.dataset.class) ? '' : 'none';
-    }});
   }}
+  refreshFilterStates();
   closeDetail();
   applyFilters();
 }}
@@ -888,6 +916,7 @@ function selectClass(cls) {{
       b.classList.toggle('active', b.dataset.class === cls);
     }});
   }}
+  refreshFilterStates();
   closeDetail();
   applyFilters();
 }}
