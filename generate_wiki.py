@@ -8,8 +8,8 @@ import html
 import os
 from collections import defaultdict
 
-LUA_DIR = r"C:\wow_addon\ClassicClassesEnhanced"
-OUT_FILE = r"C:\cce-wiki\index.html"
+LUA_DIR = r"C:\Users\beren\Objet\wow_addon\ClassicClassesEnhanced"
+OUT_FILE = r"C:\Users\beren\Objet\cce-wiki\index.html"
 
 # ── Sphere definitions (matching CatalogUI.lua) ──
 SPHERE_ORDER = ["light", "life", "chaos", "reality", "order", "death", "shadow"]
