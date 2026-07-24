@@ -1,12 +1,24 @@
   OK: Apothecary.png
+  OK: Archmage_of_Kirin_Tor_RPG_icon.png
+  OK: Argent_Dawn_Templar_RPG_icon.png
+  OK: Assassin_RPG_icon.png
+  OK: Beastmaster_RPG_icon.png
+  OK: Berserker_RPG_icon.png
   OK: Bloodmage.png
+  OK: Bone_Crusher_icon.png
+  OK: Brewmaster_RPG_icon.png
   OK: Buccaneer.png
+  OK: Buccaneer_RPG_icon.png
   OK: Claw.png
   OK: DH.png
+  OK: Dark_Ranger_icon.png
+  OK: Dead_Shot_RPG_icon.png
   OK: Death_Knight.png
+  OK: Dragonsworn_RPG_icon.png
   OK: Dwarvenprospector.png
   OK: Earthcaller.png
   OK: ElvenRanger.png
+  OK: Elven_Ranger_RPG_icon.png
   OK: Exemplar.png
   OK: Hedgewizard.png
   OK: Lightslayer.png
@@ -21,6 +33,7 @@
   OK: Spellblade.png
   OK: Techno-mage.png
   OK: Templar.png
+  OK: Wilderness_Stalker_icon.png
   OK: Wildernessstalker.png
   OK: barbarian.png
   OK: berserker.png
@@ -53,4 +66,4 @@
   OK: warden.png
   OK: witch_doctor.png
 
-Done! 54 icons copied.
+Done! 67 icons copied.
