@@ -56,7 +56,7 @@ CLASS_SPHERE = {
     "Earthcaller":        "life",
     "Warden":             "life",
     "Savagekin":          "life",
-    "Elven Archer":       "life",
+    "Elven Ranger":       "life",
     "Druid of the Claw":  "life",
     "Druid of the Wild":  "life",
     "Dragonsworn":        "life",
@@ -68,7 +68,7 @@ CLASS_SPHERE = {
     "Spellblade":         "order",
     "Tinker":             "order",
     "Scarlet Champion":   "light",
-    "Moon Priest":        "light",
+    "Moon Priestess":     "light",
     "Exemplar":           "light",
     "Templar":            "light",
     "Shieldbearer":       "light",
@@ -81,6 +81,9 @@ CLASS_SPHERE = {
     "Hedge Wizard":       "chaos",
     "Blademaster":        "chaos",
     "Demon Hunter":       "chaos",
+    "Dark Ranger":        "shadow",
+    "Gladiator":          "reality",
+    "Huntress":           "life",
 }
 
 # ── Portrait filename mapping (display name → PNG in icons/) ──
@@ -662,7 +665,7 @@ def generate_html(characters, lore, talents, challenge_descs):
             classes_data = ",".join(sorted(all_classes)).lower()
 
             if portrait:
-                img_html = f'<img src="Icons/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
+                img_html = f'<img src="portraits/jpg/{esc(portrait)}" alt="{esc(name)}" class="grid-img" loading="lazy">'
                 fb_style = 'display:none'
             else:
                 img_html = ''

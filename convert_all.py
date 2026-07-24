@@ -1,9 +1,9 @@
 """Copy circular icon PNGs from the addon's Icons/ folder to the wiki's icons/ folder."""
 import os, shutil
 
-ICONS_SRC = r"C:\wow_addon\ClassicClassesEnhanced\Icons"
-ICONS_DST = r"C:\cce-wiki\icons"
-LOG = r"C:\cce-wiki\convert_log.txt"
+ICONS_SRC = r"C:\Users\beren\Objet\wow_addon\ClassicClassesEnhanced\Icons"
+ICONS_DST = r"C:\Users\beren\Objet\cce-wiki\icons"
+LOG = r"C:\Users\beren\Objet\cce-wiki\convert_log.txt"
 
 os.makedirs(ICONS_DST, exist_ok=True)
 log_lines = []
