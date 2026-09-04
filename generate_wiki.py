@@ -111,7 +111,7 @@ PORTRAIT_MAP = {
     "Kirin Tor Mage":     "Kirin_Tor_Mage_MAGE.jpg",
     "Ley Walker":         "Ley_Walker_MAGE.jpg",
     "Lightslayer":        "Lightslayer_PRIEST.jpg",
-    "Moon Priestess":     "Moon_Priestess_PRIEST.jpg",
+    "Priestess of the Moon":     "Priestess_of_the_Moon_PRIEST.jpg",
     "Mountain King":      "Mountain_King_ROGUE.jpg",
     "Mountaineer":        "Mountaineer_HUNTER.jpg",
     "Necromancer":        "Necromancer_WARLOCK.jpg",
@@ -133,6 +133,12 @@ PORTRAIT_MAP = {
     "Warden":             "Warden_ROGUE.jpg",
     "Wilderness Stalker": "Wilderness_Stalker_HUNTER.jpg",
     "Witch Doctor":       "Witch_Doctor_PRIEST.jpg",
+    "Druid of the Talon":       "Druid_of_the_Talon_DRUID.jpg",
+    "Dark Rider":       "Dark_Rider_WARLOCK.jpg",
+    "Barbarian":       "Barbarian_WARRIOR_ALLIANCE.jpg",
+    "Deathguard":       "Deathguard_WARRIOR.jpg",
+    "Fletcher":       "Fletcher_ROGUE.jpg",
+    "Spirit Champion":       "Spirit_Champion_SHAMAN.jpg",
 }
 
 RACE_ORDER = ["Human", "Dwarf", "Night Elf", "Gnome", "Orc", "Troll", "Tauren", "Undead"]
