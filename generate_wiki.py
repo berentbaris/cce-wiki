@@ -42,7 +42,7 @@ PORTRAIT_MAP = {
     "Apothecary":         "Apothecary_PRIEST.jpg",
     "Beastmaster":        "Beastmaster_HUNTER.jpg",
     "Berserker":          "Berserker_ROGUE.jpg",
-    "Blademaster":        "Blademaster_SHAMAN.jpg",
+    "Blademaster":        "Blademaster_WARRIOR.jpg",
     "Bloodmage":          "Bloodmage_MAGE.jpg",
     "Brave":              "Brave_HUNTER.jpg",
     "Brewmaster":         "Brewmaster_WARRIOR.jpg",
