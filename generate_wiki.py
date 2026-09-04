@@ -48,7 +48,7 @@ PORTRAIT_MAP = {
     "Brewmaster":         "Brewmaster_WARRIOR.jpg",
     "Buccaneer":          "Buccaneer_HUNTER.jpg",
     "Dark Ranger":        "Dark_Ranger_ROGUE.jpg",
-    "Death Knight":       "Death_Knight_WARLOCK.jpg",
+    "Death Knight":       "Death_Knight_WARRIOR.jpg",
     "Demon Hunter":       "Demon_Hunter_ROGUE.jpg",
     "Dragonsworn":        "Dragonsworn_DRUID.jpg",
     "Druid of the Claw":  "Druid_of_the_Claw_DRUID.jpg",
